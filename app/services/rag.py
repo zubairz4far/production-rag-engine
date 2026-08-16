@@ -11,7 +11,7 @@ class RAGService:
     def __init__(self, settings: Settings):
         self.settings = settings
         self.vector_store = VectorStore(settings)
-        self.reranker = Reranker(settings.reranker_model)
+        self.reranker = Reranker(settings.reranker_model) if settings.enable_reranker else None
         self.llm = LLMClient(settings)
 
     def _retrieve_chunks(
@@ -20,12 +20,10 @@ class RAGService:
         top_k: int,
     ) -> tuple[list[RetrievedChunk], float]:
         started = time.perf_counter()
-        candidates = self.vector_store.hybrid_search(
-            question,
-            max(top_k, self.settings.retrieval_prefetch),
-        )
-        reranked = self.reranker.rerank(question, candidates, top_k)
-        return reranked, (time.perf_counter() - started) * 1000
+        search_k = max(top_k, self.settings.retrieval_prefetch) if self.reranker else top_k
+        candidates = self.vector_store.hybrid_search(question, search_k)
+        chunks = self.reranker.rerank(question, candidates, top_k) if self.reranker else candidates[:top_k]
+        return chunks, (time.perf_counter() - started) * 1000
 
     @staticmethod
     def _evidence(chunks: list[RetrievedChunk]) -> list[Evidence]:
