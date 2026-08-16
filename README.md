@@ -2,6 +2,8 @@
 
 A portfolio-grade Retrieval-Augmented Generation system built to demonstrate retrieval quality, grounded generation, evaluation, observability, and production-style API design.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/zubairz4far/production-rag-engine)
+
 ## Architecture
 
 ```text
@@ -48,7 +50,27 @@ Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> optional CrossEncod
 - structured request telemetry
 - Prometheus counters, gauges, and latency histograms
 - liveness and dependency-aware readiness endpoints
-- automated CI
+- public portfolio demo UI
+- public request rate limiting
+- upload size guardrail
+- non-root production container
+- automated CI including Docker image build
+
+## Public demo deployment
+
+The repository includes a Render Blueprint (`render.yaml`) for a one-click public portfolio deployment. Render runs the Docker image with `DEMO_MODE=true`, a 30 requests/minute per-process rate limit, and the `/health/live` health check.
+
+The public demo deliberately uses a lightweight seeded retriever so it can run on constrained free hosting while preserving the same `/v1/query`, `/v1/retrieve`, citation, evidence, and timing response contracts as the full service. The landing page clearly labels this mode. The measured production architecture remains the Qdrant + dense + BM25 + RRF engine documented below.
+
+In public demo mode:
+
+- `GET /` serves the interactive recruiter-facing UI.
+- `POST /v1/query` returns grounded answers, citations, evidence, and timings.
+- unsupported questions use the exact refusal contract.
+- document upload is disabled to avoid implying persistence on ephemeral free hosting.
+- `/docs`, `/metrics`, and health endpoints remain available.
+
+For the full engine, keep `DEMO_MODE=false` and configure Qdrant plus the OpenAI-compatible model endpoint.
 
 ## Run locally
 
@@ -59,17 +81,20 @@ docker compose up --build
 
 Then open:
 
+- Demo / landing page: `http://localhost:8000/`
 - API docs: `http://localhost:8000/docs`
 - Qdrant dashboard: `http://localhost:6333/dashboard`
 - Prometheus: `http://localhost:9090`
 - Metrics endpoint: `http://localhost:8000/metrics`
+
+To run only the lightweight public demo behavior locally, set `DEMO_MODE=true` before starting the API.
 
 ## Production health and observability
 
 The service exposes separate process and dependency health endpoints:
 
 - `GET /health/live` — process liveness; does not depend on Qdrant.
-- `GET /health/ready` — readiness; returns HTTP 503 when Qdrant is unavailable.
+- `GET /health/ready` — readiness; returns HTTP 503 when Qdrant is unavailable in full mode and reports the demo store ready in demo mode.
 - `GET /health` — compatibility alias for readiness.
 - `GET /metrics` — Prometheus exposition endpoint.
 
@@ -228,8 +253,11 @@ This repository treats RAG as an evaluated system rather than a framework demo. 
 - [x] Prometheus request/retrieval/generation metrics
 - [x] liveness and dependency-aware readiness probes
 - [x] Docker Compose Prometheus collector
+- [x] recruiter-facing public demo UI
+- [x] one-click Render Blueprint
+- [x] non-root container and Docker build CI gate
+- [x] public rate limiting and upload size guardrail
 - [ ] publish measured 40-case V2 generation results
-- [ ] expand generation benchmark to 50+ cases
 - [ ] add claim-level citation entailment scoring
 - [ ] add distributed tracing export (OpenTelemetry)
-- [ ] deploy a public demo
+- [ ] approve one-click deployment in a Render account
