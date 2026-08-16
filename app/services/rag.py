@@ -1,6 +1,7 @@
 import time
 
 from app.core.config import Settings
+from app.core.observability import GENERATION_LATENCY, RETRIEVAL_LATENCY, RETRIEVED_CHUNKS
 from app.models.schemas import Evidence, QueryResponse, RetrieveResponse
 from app.services.llm import LLMClient
 from app.services.reranker import Reranker
@@ -23,7 +24,10 @@ class RAGService:
         search_k = max(top_k, self.settings.retrieval_prefetch) if self.reranker else top_k
         candidates = self.vector_store.hybrid_search(question, search_k)
         chunks = self.reranker.rerank(question, candidates, top_k) if self.reranker else candidates[:top_k]
-        return chunks, (time.perf_counter() - started) * 1000
+        elapsed = time.perf_counter() - started
+        RETRIEVAL_LATENCY.observe(elapsed)
+        RETRIEVED_CHUNKS.observe(len(chunks))
+        return chunks, elapsed * 1000
 
     @staticmethod
     def _evidence(chunks: list[RetrievedChunk]) -> list[Evidence]:
@@ -53,7 +57,9 @@ class RAGService:
 
         generation_started = time.perf_counter()
         answer = self.llm.answer(question, chunks)
-        generation_ms = (time.perf_counter() - generation_started) * 1000
+        generation_seconds = time.perf_counter() - generation_started
+        GENERATION_LATENCY.observe(generation_seconds)
+        generation_ms = generation_seconds * 1000
 
         return QueryResponse(
             question=question,
