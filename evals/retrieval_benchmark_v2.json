@@ -1,0 +1,1215 @@
+{
+  "name": "Retrieval Benchmark V2",
+  "version": "2.0",
+  "description": "Hard retrieval benchmark with near-duplicate policies, semantic paraphrases, scope/tier conflicts, numeric inference, and multi-source questions.",
+  "benchmark_config": {
+    "top_k": 5,
+    "chunk_size_words": 90,
+    "chunk_overlap_words": 15,
+    "retrieval_prefetch": 16
+  },
+  "documents": [
+    {
+      "source": "audit_policy_current.md",
+      "text": "Atlas Cloud Security Standard — Audit Evidence (2026)\nThis standard governs production Enterprise workspaces. Security event records are preserved for 400 days in the managed audit store. \nWorkspace administrators may continuously export the same events to an external SIEM. Authentication, API-key lifecycle, role changes,\nconnector administration, and destructive document actions are included. The 400-day period is the default for production Enterprise tenants.\nA shorter value from the retired 2024 handbook must not be used for new contracts. Customer-generated application logs are outside this policy."
+    },
+    {
+      "source": "audit_policy_legacy.md",
+      "text": "Atlas Cloud Security Handbook — Archived 2024 Edition\nThis archived handbook described the former audit-log program. Enterprise event history was kept for 180 days in the managed service.\nThe document remains available only for historical comparison and migration reviews. It is superseded by the 2026 Security Standard.\nReferences to 180-day retention should not be applied to newly provisioned production workspaces."
+    },
+    {
+      "source": "incident_response_prod.md",
+      "text": "Atlas Production Incident Response Standard\nA Priority Zero production outage receives human acknowledgement within 12 minutes, any time of day. Priority One incidents have a 45-minute\nacknowledgement target. The on-call team operates continuously, including weekends and public holidays. These targets apply to production\nEnterprise and Business plans. Restoration time is not guaranteed by the acknowledgement target."
+    },
+    {
+      "source": "incident_response_sandbox.md",
+      "text": "Atlas Sandbox Support Guide\nSandbox and developer-preview environments are handled during weekday support hours. A critical sandbox interruption is normally acknowledged\nwithin 4 business hours. Sandbox incidents do not use the production Priority Zero 12-minute target. This guide is for non-production testing only."
+    },
+    {
+      "source": "recovery_enterprise.md",
+      "text": "Atlas Enterprise Resilience Plan\nProduction Enterprise databases use continuous replication plus scheduled snapshots. The recovery point objective is 10 minutes, meaning the design\naims to limit data loss to no more than ten minutes. The recovery time objective for a regional database failure is 90 minutes. Quarterly exercises\nvalidate restore procedures. These objectives apply to the managed production database tier."
+    },
+    {
+      "source": "recovery_analytics.md",
+      "text": "Atlas Analytics Warehouse Recovery Notes\nThe internal analytics warehouse is restored from nightly snapshots. Its recovery point objective is 24 hours and its recovery time objective is 8 hours.\nThese figures concern reporting and business-intelligence workloads, not the customer-facing production database service."
+    },
+    {
+      "source": "api_limits_enterprise.md",
+      "text": "Atlas API Capacity — Enterprise\nEnterprise API keys may sustain 1,200 requests per minute per workspace. Short bursts can reach 300 requests in a ten-second window.\nWhen a limit is exceeded, clients receive HTTP 429 and should apply exponential backoff. Capacity increases above the documented ceiling\nrequire an approved quota request. Limits are counted separately for each workspace."
+    },
+    {
+      "source": "api_limits_starter.md",
+      "text": "Atlas API Capacity — Starter\nStarter workspaces are limited to 120 requests per minute. Burst traffic is capped at 40 requests per ten seconds. HTTP 429 indicates throttling.\nStarter quotas are intentionally lower than Enterprise quotas and are not automatically raised when usage grows."
+    },
+    {
+      "source": "residency_eu.md",
+      "text": "Atlas EU Data Residency Addendum\nCustomers selecting the EU-resident deployment store primary customer content in Frankfurt and replicated backups in Dublin. Routine processing stays\ninside the European Economic Area. Support personnel outside the EEA may access a tenant only through an approved, logged support procedure when the\ncustomer has enabled such support access. This addendum applies only to EU-resident deployments."
+    },
+    {
+      "source": "residency_global.md",
+      "text": "Atlas Global Deployment Guide\nThe standard global deployment stores primary customer content in Virginia and replicated backups in Oregon. It is designed for customers who have not\nselected a regional residency addendum. The global guide does not describe EU-resident storage locations."
+    },
+    {
+      "source": "keys_customer_managed.md",
+      "text": "Atlas Customer-Managed Encryption Keys\nTenants using customer-managed keys must rotate the wrapping key at least once every 120 days. Atlas accepts overlap between old and new key versions\nfor a 48-hour migration period. Disabling the previous version before migration completes can make stored objects temporarily unreadable."
+    },
+    {
+      "source": "keys_platform_managed.md",
+      "text": "Atlas Platform-Managed Encryption\nFor the default platform-managed encryption service, Atlas rotates internal wrapping material every 30 days without customer action. Customers do not\nupload or schedule these platform keys. The 30-day internal cadence is distinct from the 120-day customer-managed requirement."
+    },
+    {
+      "source": "identity_enterprise.md",
+      "text": "Atlas Enterprise Identity Administration\nEnterprise tenants can enforce SAML single sign-on and automate user lifecycle management through SCIM. When SCIM is enabled, deprovisioning a user\nin the identity provider disables Atlas access within 15 minutes under normal operation. Just-in-time SAML creation may be disabled when SCIM is the\nauthoritative provisioning source."
+    },
+    {
+      "source": "identity_team.md",
+      "text": "Atlas Team Plan Identity Guide\nTeam workspaces support SAML login but do not include SCIM lifecycle provisioning. User removal is performed manually by a workspace administrator.\nThe Team plan therefore has no fifteen-minute automated deprovisioning objective."
+    },
+    {
+      "source": "deletion_customer_content.md",
+      "text": "Atlas Customer Content Deletion Standard\nWhen a workspace administrator permanently deletes a source document, the active copy and derived retrieval chunks are queued for irreversible removal\nwithin 21 days. Search indexes are invalidated immediately so deleted content is no longer returned to users. Disaster-recovery backups age out on their\nnormal rolling schedule and are not individually edited."
+    },
+    {
+      "source": "deletion_account.md",
+      "text": "Atlas Account Closure Procedure\nClosing an entire customer account begins a separate offboarding process. Billing records required for statutory accounting may be retained for seven years,\nwhile operational tenant data is scheduled for deletion after the contractual closure window. This procedure is not the document-level deletion standard."
+    },
+    {
+      "source": "support_enterprise.md",
+      "text": "Atlas Enterprise Support Coverage\nEnterprise customers receive staffed technical support 24 hours a day, seven days a week. Standard non-incident requests have a two-hour first-response\nobjective. Named technical account reviews occur monthly. This support coverage is separate from incident severity acknowledgement targets."
+    },
+    {
+      "source": "support_business.md",
+      "text": "Atlas Business Support Coverage\nBusiness customers receive staffed technical support from 08:00 to 20:00 local business time, Monday through Friday. Standard requests have an eight-hour\nfirst-response objective measured during covered hours. Weekend coverage is not included unless separately purchased."
+    },
+    {
+      "source": "connector_drive.md",
+      "text": "Atlas Google Drive Connector\nAfter initial indexing, the Google Drive connector checks for changed files every 5 minutes. Permission changes are synchronized during the same polling\ncycle. Administrators can also request a manual refresh. Very large drives may require additional processing time after a change is discovered."
+    },
+    {
+      "source": "connector_sharepoint.md",
+      "text": "Atlas SharePoint Connector\nThe SharePoint connector polls for changed documents every 30 minutes after initial indexing. Access-control changes are processed with the content delta.\nA manual synchronization can be initiated by an administrator. The thirty-minute cadence is specific to SharePoint."
+    },
+    {
+      "source": "model_risk_high.md",
+      "text": "Atlas High-Risk Model Governance\nA model classified as high risk cannot be promoted to production until it passes red-team review, privacy review, and an offline quality gate of at least\n92 percent on the approved task benchmark. Any material prompt, retrieval, or fine-tuning change requires reevaluation before the next production release."
+    },
+    {
+      "source": "model_risk_standard.md",
+      "text": "Atlas Standard Model Governance\nStandard-risk internal assistants require owner approval and an offline quality score of at least 80 percent on their designated benchmark before release.\nA dedicated red-team review is recommended but is not mandatory for every standard-risk iteration."
+    },
+    {
+      "source": "billing_annual.md",
+      "text": "Atlas Annual Subscription Terms\nAnnual prepaid subscriptions may be cancelled within 30 calendar days of the initial purchase for a prorated refund of the unused term. Renewals can be\nstopped before the renewal date, but a renewed annual term is otherwise non-refundable except where law requires. Usage-based overage charges are excluded\nfrom the subscription refund calculation."
+    },
+    {
+      "source": "billing_monthly.md",
+      "text": "Atlas Monthly Subscription Terms\nMonthly subscriptions can be cancelled at any time and remain active through the end of the paid month. Monthly fees already charged are not prorated or\nrefunded for unused days, except where required by law. There is no thirty-day annual-purchase refund rule for monthly subscriptions."
+    }
+  ],
+  "queries": [
+    {
+      "id": "v2-001",
+      "category": "semantic_paraphrase",
+      "topic": "audit_retention",
+      "query": "For a new enterprise tenant, how far back can administrators investigate security activity in the built-in history?",
+      "expected_sources": [
+        "audit_policy_current.md"
+      ]
+    },
+    {
+      "id": "v2-002",
+      "category": "version_conflict",
+      "topic": "audit_retention",
+      "query": "What is the current managed retention window for production security events?",
+      "expected_sources": [
+        "audit_policy_current.md"
+      ]
+    },
+    {
+      "id": "v2-003",
+      "category": "lexical_distractor",
+      "topic": "audit_retention",
+      "query": "The old handbook says 180 days. What period applies to newly provisioned workspaces instead?",
+      "expected_sources": [
+        "audit_policy_current.md"
+      ]
+    },
+    {
+      "id": "v2-004",
+      "category": "indirect_numeric",
+      "topic": "audit_retention",
+      "query": "If an incident happened roughly thirteen months ago, should it normally still be inside the standard enterprise audit history?",
+      "expected_sources": [
+        "audit_policy_current.md"
+      ]
+    },
+    {
+      "id": "v2-005",
+      "category": "semantic_paraphrase",
+      "topic": "audit_retention",
+      "query": "Which document defines the live policy for preserving authentication and role-change evidence?",
+      "expected_sources": [
+        "audit_policy_current.md"
+      ]
+    },
+    {
+      "id": "v2-006",
+      "category": "version_conflict",
+      "topic": "audit_retention",
+      "query": "How long did the archived 2024 audit program keep enterprise event history?",
+      "expected_sources": [
+        "audit_policy_legacy.md"
+      ]
+    },
+    {
+      "id": "v2-007",
+      "category": "scope_disambiguation",
+      "topic": "audit_retention",
+      "query": "Does the 180-day value describe the active standard or the retired handbook?",
+      "expected_sources": [
+        "audit_policy_legacy.md"
+      ]
+    },
+    {
+      "id": "v2-008",
+      "category": "lexical_distractor",
+      "topic": "audit_retention",
+      "query": "Find the historical document that mentions the shorter security-event retention period.",
+      "expected_sources": [
+        "audit_policy_legacy.md"
+      ]
+    },
+    {
+      "id": "v2-009",
+      "category": "contrast",
+      "topic": "audit_retention",
+      "query": "Compare the active and archived audit-retention rules.",
+      "expected_sources": [
+        "audit_policy_current.md",
+        "audit_policy_legacy.md"
+      ]
+    },
+    {
+      "id": "v2-010",
+      "category": "multi_source",
+      "topic": "audit_retention",
+      "query": "Which two documents would you retrieve to explain why 180 days and 400 days both appear in company material?",
+      "expected_sources": [
+        "audit_policy_current.md",
+        "audit_policy_legacy.md"
+      ]
+    },
+    {
+      "id": "v2-011",
+      "category": "semantic_paraphrase",
+      "topic": "incident_sla",
+      "query": "How quickly should a person respond when the live service is completely down at the highest severity?",
+      "expected_sources": [
+        "incident_response_prod.md"
+      ]
+    },
+    {
+      "id": "v2-012",
+      "category": "scope_disambiguation",
+      "topic": "incident_sla",
+      "query": "What acknowledgement target applies to the most severe production outage?",
+      "expected_sources": [
+        "incident_response_prod.md"
+      ]
+    },
+    {
+      "id": "v2-013",
+      "category": "lexical_distractor",
+      "topic": "incident_sla",
+      "query": "A sandbox guide mentions four business hours; what is the live-environment target instead?",
+      "expected_sources": [
+        "incident_response_prod.md"
+      ]
+    },
+    {
+      "id": "v2-014",
+      "category": "indirect_numeric",
+      "topic": "incident_sla",
+      "query": "Would a 20-minute first response to a Priority Zero production outage miss the target?",
+      "expected_sources": [
+        "incident_response_prod.md"
+      ]
+    },
+    {
+      "id": "v2-015",
+      "category": "semantic_paraphrase",
+      "topic": "incident_sla",
+      "query": "Which policy establishes round-the-clock human response for major live incidents?",
+      "expected_sources": [
+        "incident_response_prod.md"
+      ]
+    },
+    {
+      "id": "v2-016",
+      "category": "scope_disambiguation",
+      "topic": "incident_sla",
+      "query": "How are critical interruptions in developer-preview environments handled?",
+      "expected_sources": [
+        "incident_response_sandbox.md"
+      ]
+    },
+    {
+      "id": "v2-017",
+      "category": "lexical_distractor",
+      "topic": "incident_sla",
+      "query": "Which document contains the four-business-hour critical response window?",
+      "expected_sources": [
+        "incident_response_sandbox.md"
+      ]
+    },
+    {
+      "id": "v2-018",
+      "category": "semantic_paraphrase",
+      "topic": "incident_sla",
+      "query": "What support expectation applies when the failure is only in a test environment?",
+      "expected_sources": [
+        "incident_response_sandbox.md"
+      ]
+    },
+    {
+      "id": "v2-019",
+      "category": "contrast",
+      "topic": "incident_sla",
+      "query": "Retrieve the rules needed to compare critical response expectations for production and sandbox systems.",
+      "expected_sources": [
+        "incident_response_prod.md",
+        "incident_response_sandbox.md"
+      ]
+    },
+    {
+      "id": "v2-020",
+      "category": "multi_source",
+      "topic": "incident_sla",
+      "query": "Why might someone see both 12 minutes and 4 business hours in incident-response documentation?",
+      "expected_sources": [
+        "incident_response_prod.md",
+        "incident_response_sandbox.md"
+      ]
+    },
+    {
+      "id": "v2-021",
+      "category": "semantic_paraphrase",
+      "topic": "backup_recovery",
+      "query": "For the customer-facing database, what is the maximum designed exposure to lost writes after a failure?",
+      "expected_sources": [
+        "recovery_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-022",
+      "category": "indirect_numeric",
+      "topic": "backup_recovery",
+      "query": "Could the production recovery design tolerate losing half an hour of database changes and still meet its stated objective?",
+      "expected_sources": [
+        "recovery_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-023",
+      "category": "scope_disambiguation",
+      "topic": "backup_recovery",
+      "query": "What RTO governs a regional failure of the managed production database?",
+      "expected_sources": [
+        "recovery_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-024",
+      "category": "lexical_distractor",
+      "topic": "backup_recovery",
+      "query": "The warehouse can lose up to a day of data. What target applies to the live database tier?",
+      "expected_sources": [
+        "recovery_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-025",
+      "category": "semantic_paraphrase",
+      "topic": "backup_recovery",
+      "query": "Which plan describes quarterly restoration drills for customer production data?",
+      "expected_sources": [
+        "recovery_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-026",
+      "category": "scope_disambiguation",
+      "topic": "backup_recovery",
+      "query": "What recovery point objective belongs to the reporting warehouse?",
+      "expected_sources": [
+        "recovery_analytics.md"
+      ]
+    },
+    {
+      "id": "v2-027",
+      "category": "indirect_numeric",
+      "topic": "backup_recovery",
+      "query": "If the analytics system needs six hours to return, is that within its documented recovery-time objective?",
+      "expected_sources": [
+        "recovery_analytics.md"
+      ]
+    },
+    {
+      "id": "v2-028",
+      "category": "lexical_distractor",
+      "topic": "backup_recovery",
+      "query": "Find the document where nightly snapshots and an eight-hour restoration goal are paired.",
+      "expected_sources": [
+        "recovery_analytics.md"
+      ]
+    },
+    {
+      "id": "v2-029",
+      "category": "contrast",
+      "topic": "backup_recovery",
+      "query": "Compare recovery-point and recovery-time objectives for production databases and the analytics warehouse.",
+      "expected_sources": [
+        "recovery_enterprise.md",
+        "recovery_analytics.md"
+      ]
+    },
+    {
+      "id": "v2-030",
+      "category": "multi_source",
+      "topic": "backup_recovery",
+      "query": "Which sources explain why the company publishes both a 10-minute and a 24-hour RPO?",
+      "expected_sources": [
+        "recovery_enterprise.md",
+        "recovery_analytics.md"
+      ]
+    },
+    {
+      "id": "v2-031",
+      "category": "tier_disambiguation",
+      "topic": "api_limits",
+      "query": "How much steady API traffic can an enterprise workspace send each minute before throttling?",
+      "expected_sources": [
+        "api_limits_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-032",
+      "category": "semantic_paraphrase",
+      "topic": "api_limits",
+      "query": "What sustained call volume is allowed on the highest service tier?",
+      "expected_sources": [
+        "api_limits_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-033",
+      "category": "lexical_distractor",
+      "topic": "api_limits",
+      "query": "Starter allows 120 calls a minute. What is the corresponding enterprise ceiling?",
+      "expected_sources": [
+        "api_limits_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-034",
+      "category": "indirect_numeric",
+      "topic": "api_limits",
+      "query": "Would 1,000 requests spread evenly across one minute exceed the enterprise steady-state quota?",
+      "expected_sources": [
+        "api_limits_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-035",
+      "category": "scope_disambiguation",
+      "topic": "api_limits",
+      "query": "Which capacity document says quota increases need approval?",
+      "expected_sources": [
+        "api_limits_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-036",
+      "category": "tier_disambiguation",
+      "topic": "api_limits",
+      "query": "What minute-level request cap applies to a Starter workspace?",
+      "expected_sources": [
+        "api_limits_starter.md"
+      ]
+    },
+    {
+      "id": "v2-037",
+      "category": "indirect_numeric",
+      "topic": "api_limits",
+      "query": "Would 200 requests in one minute be over the Starter allowance?",
+      "expected_sources": [
+        "api_limits_starter.md"
+      ]
+    },
+    {
+      "id": "v2-038",
+      "category": "lexical_distractor",
+      "topic": "api_limits",
+      "query": "Find the plan whose ten-second burst limit is forty requests.",
+      "expected_sources": [
+        "api_limits_starter.md"
+      ]
+    },
+    {
+      "id": "v2-039",
+      "category": "contrast",
+      "topic": "api_limits",
+      "query": "Retrieve the sources required to compare Starter and Enterprise API capacity.",
+      "expected_sources": [
+        "api_limits_enterprise.md",
+        "api_limits_starter.md"
+      ]
+    },
+    {
+      "id": "v2-040",
+      "category": "multi_source",
+      "topic": "api_limits",
+      "query": "Why do Atlas documents mention both 120 and 1,200 requests per minute?",
+      "expected_sources": [
+        "api_limits_enterprise.md",
+        "api_limits_starter.md"
+      ]
+    },
+    {
+      "id": "v2-041",
+      "category": "semantic_paraphrase",
+      "topic": "data_residency",
+      "query": "Where is the main copy of customer content kept when a tenant chooses European residency?",
+      "expected_sources": [
+        "residency_eu.md"
+      ]
+    },
+    {
+      "id": "v2-042",
+      "category": "scope_disambiguation",
+      "topic": "data_residency",
+      "query": "Which city hosts primary data for the EU-resident deployment?",
+      "expected_sources": [
+        "residency_eu.md"
+      ]
+    },
+    {
+      "id": "v2-043",
+      "category": "lexical_distractor",
+      "topic": "data_residency",
+      "query": "The global guide names Virginia. What location applies when the customer has explicitly chosen EU residency?",
+      "expected_sources": [
+        "residency_eu.md"
+      ]
+    },
+    {
+      "id": "v2-044",
+      "category": "semantic_paraphrase",
+      "topic": "data_residency",
+      "query": "Which policy keeps normal processing within the EEA?",
+      "expected_sources": [
+        "residency_eu.md"
+      ]
+    },
+    {
+      "id": "v2-045",
+      "category": "scope_disambiguation",
+      "topic": "data_residency",
+      "query": "Where are EU-resident backup replicas placed?",
+      "expected_sources": [
+        "residency_eu.md"
+      ]
+    },
+    {
+      "id": "v2-046",
+      "category": "scope_disambiguation",
+      "topic": "data_residency",
+      "query": "Where does the standard non-regional deployment keep primary customer content?",
+      "expected_sources": [
+        "residency_global.md"
+      ]
+    },
+    {
+      "id": "v2-047",
+      "category": "lexical_distractor",
+      "topic": "data_residency",
+      "query": "Find the deployment guide that pairs Virginia with Oregon.",
+      "expected_sources": [
+        "residency_global.md"
+      ]
+    },
+    {
+      "id": "v2-048",
+      "category": "semantic_paraphrase",
+      "topic": "data_residency",
+      "query": "Which source applies when a customer did not opt into a regional residency addendum?",
+      "expected_sources": [
+        "residency_global.md"
+      ]
+    },
+    {
+      "id": "v2-049",
+      "category": "contrast",
+      "topic": "data_residency",
+      "query": "Retrieve the material needed to compare EU-resident and standard global storage locations.",
+      "expected_sources": [
+        "residency_eu.md",
+        "residency_global.md"
+      ]
+    },
+    {
+      "id": "v2-050",
+      "category": "multi_source",
+      "topic": "data_residency",
+      "query": "Which sources explain why Frankfurt and Virginia are both listed as primary storage regions?",
+      "expected_sources": [
+        "residency_eu.md",
+        "residency_global.md"
+      ]
+    },
+    {
+      "id": "v2-051",
+      "category": "semantic_paraphrase",
+      "topic": "key_rotation",
+      "query": "How often does a tenant need to replace its own externally controlled wrapping secret?",
+      "expected_sources": [
+        "keys_customer_managed.md"
+      ]
+    },
+    {
+      "id": "v2-052",
+      "category": "scope_disambiguation",
+      "topic": "key_rotation",
+      "query": "What rotation interval applies when the customer controls the encryption key?",
+      "expected_sources": [
+        "keys_customer_managed.md"
+      ]
+    },
+    {
+      "id": "v2-053",
+      "category": "lexical_distractor",
+      "topic": "key_rotation",
+      "query": "Internal platform keys change monthly. What is the separate customer-managed requirement?",
+      "expected_sources": [
+        "keys_customer_managed.md"
+      ]
+    },
+    {
+      "id": "v2-054",
+      "category": "indirect_numeric",
+      "topic": "key_rotation",
+      "query": "Would rotating a customer-managed key every six months satisfy the documented maximum interval?",
+      "expected_sources": [
+        "keys_customer_managed.md"
+      ]
+    },
+    {
+      "id": "v2-055",
+      "category": "semantic_paraphrase",
+      "topic": "key_rotation",
+      "query": "Which document warns about a two-day overlap while changing tenant-controlled keys?",
+      "expected_sources": [
+        "keys_customer_managed.md"
+      ]
+    },
+    {
+      "id": "v2-056",
+      "category": "scope_disambiguation",
+      "topic": "key_rotation",
+      "query": "How frequently does Atlas rotate its own default wrapping material?",
+      "expected_sources": [
+        "keys_platform_managed.md"
+      ]
+    },
+    {
+      "id": "v2-057",
+      "category": "semantic_paraphrase",
+      "topic": "key_rotation",
+      "query": "Which encryption mode requires no customer scheduling of key changes?",
+      "expected_sources": [
+        "keys_platform_managed.md"
+      ]
+    },
+    {
+      "id": "v2-058",
+      "category": "lexical_distractor",
+      "topic": "key_rotation",
+      "query": "Find the source that describes a thirty-day internal key cadence.",
+      "expected_sources": [
+        "keys_platform_managed.md"
+      ]
+    },
+    {
+      "id": "v2-059",
+      "category": "contrast",
+      "topic": "key_rotation",
+      "query": "Compare the rotation schedules for customer-managed and platform-managed encryption.",
+      "expected_sources": [
+        "keys_customer_managed.md",
+        "keys_platform_managed.md"
+      ]
+    },
+    {
+      "id": "v2-060",
+      "category": "multi_source",
+      "topic": "key_rotation",
+      "query": "Which two sources resolve the apparent conflict between 30-day and 120-day key rotation?",
+      "expected_sources": [
+        "keys_customer_managed.md",
+        "keys_platform_managed.md"
+      ]
+    },
+    {
+      "id": "v2-061",
+      "category": "semantic_paraphrase",
+      "topic": "identity_provisioning",
+      "query": "How quickly should access disappear after an enterprise employee is removed from the corporate identity directory?",
+      "expected_sources": [
+        "identity_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-062",
+      "category": "tier_disambiguation",
+      "topic": "identity_provisioning",
+      "query": "What automated deprovisioning target exists when Enterprise SCIM is enabled?",
+      "expected_sources": [
+        "identity_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-063",
+      "category": "lexical_distractor",
+      "topic": "identity_provisioning",
+      "query": "The Team plan requires manual removal. What happens for enterprise users managed through SCIM?",
+      "expected_sources": [
+        "identity_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-064",
+      "category": "semantic_paraphrase",
+      "topic": "identity_provisioning",
+      "query": "Which identity document describes the directory as the authoritative lifecycle source?",
+      "expected_sources": [
+        "identity_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-065",
+      "category": "indirect_numeric",
+      "topic": "identity_provisioning",
+      "query": "If a disabled enterprise employee can still log in 40 minutes later under normal conditions, is that within the stated target?",
+      "expected_sources": [
+        "identity_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-066",
+      "category": "tier_disambiguation",
+      "topic": "identity_provisioning",
+      "query": "Does the Team plan include SCIM-based lifecycle automation?",
+      "expected_sources": [
+        "identity_team.md"
+      ]
+    },
+    {
+      "id": "v2-067",
+      "category": "semantic_paraphrase",
+      "topic": "identity_provisioning",
+      "query": "Which plan requires an administrator to remove users by hand?",
+      "expected_sources": [
+        "identity_team.md"
+      ]
+    },
+    {
+      "id": "v2-068",
+      "category": "lexical_distractor",
+      "topic": "identity_provisioning",
+      "query": "Find the identity guide that explicitly says there is no fifteen-minute automated deprovisioning objective.",
+      "expected_sources": [
+        "identity_team.md"
+      ]
+    },
+    {
+      "id": "v2-069",
+      "category": "contrast",
+      "topic": "identity_provisioning",
+      "query": "Retrieve the sources needed to compare enterprise and team-plan user offboarding.",
+      "expected_sources": [
+        "identity_enterprise.md",
+        "identity_team.md"
+      ]
+    },
+    {
+      "id": "v2-070",
+      "category": "multi_source",
+      "topic": "identity_provisioning",
+      "query": "Why do some Atlas identity documents mention fifteen-minute deprovisioning while others say removal is manual?",
+      "expected_sources": [
+        "identity_enterprise.md",
+        "identity_team.md"
+      ]
+    },
+    {
+      "id": "v2-071",
+      "category": "semantic_paraphrase",
+      "topic": "deletion",
+      "query": "After an admin destroys one uploaded source, how long can its underlying content and retrieval fragments remain before irreversible removal?",
+      "expected_sources": [
+        "deletion_customer_content.md"
+      ]
+    },
+    {
+      "id": "v2-072",
+      "category": "scope_disambiguation",
+      "topic": "deletion",
+      "query": "What deletion window applies to a single source document rather than an entire account?",
+      "expected_sources": [
+        "deletion_customer_content.md"
+      ]
+    },
+    {
+      "id": "v2-073",
+      "category": "lexical_distractor",
+      "topic": "deletion",
+      "query": "Account closure can involve seven-year financial records. What happens to an individually deleted knowledge source?",
+      "expected_sources": [
+        "deletion_customer_content.md"
+      ]
+    },
+    {
+      "id": "v2-074",
+      "category": "semantic_paraphrase",
+      "topic": "deletion",
+      "query": "Which standard says search results stop using deleted material immediately even though backend erasure completes later?",
+      "expected_sources": [
+        "deletion_customer_content.md"
+      ]
+    },
+    {
+      "id": "v2-075",
+      "category": "indirect_numeric",
+      "topic": "deletion",
+      "query": "Should a deleted document's active data still exist one month later under the document-level policy?",
+      "expected_sources": [
+        "deletion_customer_content.md"
+      ]
+    },
+    {
+      "id": "v2-076",
+      "category": "scope_disambiguation",
+      "topic": "deletion",
+      "query": "Which procedure discusses legally retained billing records after a customer closes the whole account?",
+      "expected_sources": [
+        "deletion_account.md"
+      ]
+    },
+    {
+      "id": "v2-077",
+      "category": "semantic_paraphrase",
+      "topic": "deletion",
+      "query": "What document governs complete tenant offboarding rather than removal of one knowledge file?",
+      "expected_sources": [
+        "deletion_account.md"
+      ]
+    },
+    {
+      "id": "v2-078",
+      "category": "lexical_distractor",
+      "topic": "deletion",
+      "query": "Find the source that mentions seven years of statutory accounting retention.",
+      "expected_sources": [
+        "deletion_account.md"
+      ]
+    },
+    {
+      "id": "v2-079",
+      "category": "contrast",
+      "topic": "deletion",
+      "query": "Retrieve the policies needed to distinguish single-document deletion from full account closure.",
+      "expected_sources": [
+        "deletion_customer_content.md",
+        "deletion_account.md"
+      ]
+    },
+    {
+      "id": "v2-080",
+      "category": "multi_source",
+      "topic": "deletion",
+      "query": "Which sources explain why deletion documentation mentions both 21 days and seven years?",
+      "expected_sources": [
+        "deletion_customer_content.md",
+        "deletion_account.md"
+      ]
+    },
+    {
+      "id": "v2-081",
+      "category": "tier_disambiguation",
+      "topic": "support",
+      "query": "Is ordinary enterprise technical support staffed overnight and on weekends?",
+      "expected_sources": [
+        "support_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-082",
+      "category": "semantic_paraphrase",
+      "topic": "support",
+      "query": "How soon should an enterprise customer expect the first reply to a routine, non-incident ticket?",
+      "expected_sources": [
+        "support_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-083",
+      "category": "lexical_distractor",
+      "topic": "support",
+      "query": "Business support uses an eight-hour objective. What is the standard enterprise request target?",
+      "expected_sources": [
+        "support_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-084",
+      "category": "semantic_paraphrase",
+      "topic": "support",
+      "query": "Which coverage document promises continuous staffed help rather than weekday-only service?",
+      "expected_sources": [
+        "support_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-085",
+      "category": "scope_disambiguation",
+      "topic": "support",
+      "query": "Are monthly technical account reviews part of the enterprise support offering?",
+      "expected_sources": [
+        "support_enterprise.md"
+      ]
+    },
+    {
+      "id": "v2-086",
+      "category": "tier_disambiguation",
+      "topic": "support",
+      "query": "What hours are staffed for Business-plan technical support?",
+      "expected_sources": [
+        "support_business.md"
+      ]
+    },
+    {
+      "id": "v2-087",
+      "category": "indirect_numeric",
+      "topic": "support",
+      "query": "Would a Saturday routine support request be inside normal Business-plan staffed hours?",
+      "expected_sources": [
+        "support_business.md"
+      ]
+    },
+    {
+      "id": "v2-088",
+      "category": "lexical_distractor",
+      "topic": "support",
+      "query": "Find the source where the ordinary response objective is eight hours during covered time.",
+      "expected_sources": [
+        "support_business.md"
+      ]
+    },
+    {
+      "id": "v2-089",
+      "category": "contrast",
+      "topic": "support",
+      "query": "Compare normal support coverage and first-response objectives for Enterprise and Business plans.",
+      "expected_sources": [
+        "support_enterprise.md",
+        "support_business.md"
+      ]
+    },
+    {
+      "id": "v2-090",
+      "category": "multi_source",
+      "topic": "support",
+      "query": "Which documents explain the two-hour versus eight-hour standard support response objectives?",
+      "expected_sources": [
+        "support_enterprise.md",
+        "support_business.md"
+      ]
+    },
+    {
+      "id": "v2-091",
+      "category": "semantic_paraphrase",
+      "topic": "connector_sync",
+      "query": "How soon does the Drive integration normally look again for modified files after it has been indexed?",
+      "expected_sources": [
+        "connector_drive.md"
+      ]
+    },
+    {
+      "id": "v2-092",
+      "category": "scope_disambiguation",
+      "topic": "connector_sync",
+      "query": "What polling cadence belongs to Google Drive?",
+      "expected_sources": [
+        "connector_drive.md"
+      ]
+    },
+    {
+      "id": "v2-093",
+      "category": "lexical_distractor",
+      "topic": "connector_sync",
+      "query": "SharePoint checks every thirty minutes. How frequently does Drive check for deltas?",
+      "expected_sources": [
+        "connector_drive.md"
+      ]
+    },
+    {
+      "id": "v2-094",
+      "category": "semantic_paraphrase",
+      "topic": "connector_sync",
+      "query": "Which connector synchronizes permission changes on a five-minute polling cycle?",
+      "expected_sources": [
+        "connector_drive.md"
+      ]
+    },
+    {
+      "id": "v2-095",
+      "category": "indirect_numeric",
+      "topic": "connector_sync",
+      "query": "If a Drive file changed twelve minutes ago, should more than one normal change-detection poll have occurred?",
+      "expected_sources": [
+        "connector_drive.md"
+      ]
+    },
+    {
+      "id": "v2-096",
+      "category": "scope_disambiguation",
+      "topic": "connector_sync",
+      "query": "How often does the SharePoint integration poll for changed documents?",
+      "expected_sources": [
+        "connector_sharepoint.md"
+      ]
+    },
+    {
+      "id": "v2-097",
+      "category": "semantic_paraphrase",
+      "topic": "connector_sync",
+      "query": "Which connector uses a half-hour delta-discovery interval?",
+      "expected_sources": [
+        "connector_sharepoint.md"
+      ]
+    },
+    {
+      "id": "v2-098",
+      "category": "lexical_distractor",
+      "topic": "connector_sync",
+      "query": "Find the integration document where access-control changes ride with a thirty-minute content delta.",
+      "expected_sources": [
+        "connector_sharepoint.md"
+      ]
+    },
+    {
+      "id": "v2-099",
+      "category": "contrast",
+      "topic": "connector_sync",
+      "query": "Retrieve the sources needed to compare Drive and SharePoint synchronization cadence.",
+      "expected_sources": [
+        "connector_drive.md",
+        "connector_sharepoint.md"
+      ]
+    },
+    {
+      "id": "v2-100",
+      "category": "multi_source",
+      "topic": "connector_sync",
+      "query": "Why do connector documents list both five-minute and thirty-minute polling intervals?",
+      "expected_sources": [
+        "connector_drive.md",
+        "connector_sharepoint.md"
+      ]
+    },
+    {
+      "id": "v2-101",
+      "category": "semantic_paraphrase",
+      "topic": "model_governance",
+      "query": "What minimum offline score must a high-risk model clear before it can go live?",
+      "expected_sources": [
+        "model_risk_high.md"
+      ]
+    },
+    {
+      "id": "v2-102",
+      "category": "scope_disambiguation",
+      "topic": "model_governance",
+      "query": "Which governance tier requires both privacy review and red-team review before production?",
+      "expected_sources": [
+        "model_risk_high.md"
+      ]
+    },
+    {
+      "id": "v2-103",
+      "category": "lexical_distractor",
+      "topic": "model_governance",
+      "query": "Standard-risk assistants can ship at eighty percent. What threshold applies to high-risk systems?",
+      "expected_sources": [
+        "model_risk_high.md"
+      ]
+    },
+    {
+      "id": "v2-104",
+      "category": "indirect_numeric",
+      "topic": "model_governance",
+      "query": "Could a high-risk model scoring 90% on the approved benchmark be promoted under the documented gate?",
+      "expected_sources": [
+        "model_risk_high.md"
+      ]
+    },
+    {
+      "id": "v2-105",
+      "category": "semantic_paraphrase",
+      "topic": "model_governance",
+      "query": "Which policy forces reevaluation after material retrieval or fine-tuning changes?",
+      "expected_sources": [
+        "model_risk_high.md"
+      ]
+    },
+    {
+      "id": "v2-106",
+      "category": "scope_disambiguation",
+      "topic": "model_governance",
+      "query": "What offline quality floor applies to a standard-risk internal assistant?",
+      "expected_sources": [
+        "model_risk_standard.md"
+      ]
+    },
+    {
+      "id": "v2-107",
+      "category": "semantic_paraphrase",
+      "topic": "model_governance",
+      "query": "Which governance document says a dedicated red-team review is recommended rather than always mandatory?",
+      "expected_sources": [
+        "model_risk_standard.md"
+      ]
+    },
+    {
+      "id": "v2-108",
+      "category": "lexical_distractor",
+      "topic": "model_governance",
+      "query": "Find the policy where owner approval and an eighty-percent benchmark score are sufficient release gates.",
+      "expected_sources": [
+        "model_risk_standard.md"
+      ]
+    },
+    {
+      "id": "v2-109",
+      "category": "contrast",
+      "topic": "model_governance",
+      "query": "Retrieve both governance policies to compare release requirements for high-risk and standard-risk models.",
+      "expected_sources": [
+        "model_risk_high.md",
+        "model_risk_standard.md"
+      ]
+    },
+    {
+      "id": "v2-110",
+      "category": "multi_source",
+      "topic": "model_governance",
+      "query": "Which sources explain why Atlas documentation contains both 80% and 92% quality gates?",
+      "expected_sources": [
+        "model_risk_high.md",
+        "model_risk_standard.md"
+      ]
+    },
+    {
+      "id": "v2-111",
+      "category": "semantic_paraphrase",
+      "topic": "billing",
+      "query": "A customer prepaid for a year and changes their mind two weeks after the first purchase. What refund rule governs?",
+      "expected_sources": [
+        "billing_annual.md"
+      ]
+    },
+    {
+      "id": "v2-112",
+      "category": "scope_disambiguation",
+      "topic": "billing",
+      "query": "What cancellation window is specific to a newly purchased annual prepaid subscription?",
+      "expected_sources": [
+        "billing_annual.md"
+      ]
+    },
+    {
+      "id": "v2-113",
+      "category": "lexical_distractor",
+      "topic": "billing",
+      "query": "Monthly plans do not prorate unused days. What different rule applies to a first-time annual purchase?",
+      "expected_sources": [
+        "billing_annual.md"
+      ]
+    },
+    {
+      "id": "v2-114",
+      "category": "indirect_numeric",
+      "topic": "billing",
+      "query": "Is a request made 25 calendar days after the initial annual purchase still inside the stated cancellation window?",
+      "expected_sources": [
+        "billing_annual.md"
+      ]
+    },
+    {
+      "id": "v2-115",
+      "category": "semantic_paraphrase",
+      "topic": "billing",
+      "query": "Which terms exclude usage overages from the annual subscription refund calculation?",
+      "expected_sources": [
+        "billing_annual.md"
+      ]
+    },
+    {
+      "id": "v2-116",
+      "category": "scope_disambiguation",
+      "topic": "billing",
+      "query": "What happens to a monthly subscription after it is cancelled mid-cycle?",
+      "expected_sources": [
+        "billing_monthly.md"
+      ]
+    },
+    {
+      "id": "v2-117",
+      "category": "semantic_paraphrase",
+      "topic": "billing",
+      "query": "Which plan generally provides no partial refund for unused days in the already-paid month?",
+      "expected_sources": [
+        "billing_monthly.md"
+      ]
+    },
+    {
+      "id": "v2-118",
+      "category": "lexical_distractor",
+      "topic": "billing",
+      "query": "Find the terms that explicitly say the thirty-day annual-purchase rule does not apply.",
+      "expected_sources": [
+        "billing_monthly.md"
+      ]
+    },
+    {
+      "id": "v2-119",
+      "category": "contrast",
+      "topic": "billing",
+      "query": "Retrieve both billing policies to compare cancellation and refund treatment for annual versus monthly subscriptions.",
+      "expected_sources": [
+        "billing_annual.md",
+        "billing_monthly.md"
+      ]
+    },
+    {
+      "id": "v2-120",
+      "category": "multi_source",
+      "topic": "billing",
+      "query": "Which sources explain why some customers may receive a prorated refund while others normally do not?",
+      "expected_sources": [
+        "billing_annual.md",
+        "billing_monthly.md"
+      ]
+    }
+  ]
+}
