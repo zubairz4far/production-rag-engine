@@ -6,7 +6,7 @@ A portfolio-grade Retrieval-Augmented Generation system built to demonstrate ret
 
 ```text
 Documents -> Loader -> Chunker -> Dense + BM25 indexing -> Qdrant
-Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> CrossEncoder reranker
+Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> FastEmbed CrossEncoder reranker
       -> Context builder -> OpenAI-compatible LLM -> Answer + citations
       -> Evaluation: Hit@K, MRR, citation rate, answer recall, latency
 ```
@@ -16,10 +16,12 @@ Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> CrossEncoder rerank
 - FastAPI
 - Qdrant
 - FastEmbed
-- Sentence Transformers
+- dense semantic embeddings
+- BM25 sparse retrieval
 - CrossEncoder reranking
 - OpenAI-compatible LLM endpoint
 - Docker / Docker Compose
+- GitHub Actions
 
 ## Core features
 
@@ -31,8 +33,9 @@ Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> CrossEncoder rerank
 - second-stage reranking
 - citation-aware grounded generation
 - retrieval-only debugging endpoint
-- golden evaluation dataset
+- multi-document golden retrieval benchmark
 - latency tracking
+- automated CI
 
 ## Run locally
 
@@ -71,29 +74,58 @@ curl -X POST "http://localhost:8000/v1/query" \
   -d '{"question":"What does the document say?","top_k":5}'
 ```
 
+## Reproducible retrieval benchmark
+
+The benchmark uses six competing documents and 20 labeled questions. It runs Qdrant in-memory, so no external database is required.
+
+```bash
+pip install -e .
+python scripts/benchmark_retrieval.py
+```
+
+The script compares four systems:
+
+1. dense-only retrieval
+2. sparse BM25 retrieval
+3. dense + sparse with Reciprocal Rank Fusion
+4. hybrid RRF + CrossEncoder reranking
+
+It reports `Hit@5`, `MRR`, mean latency, and P95 latency, and writes the machine-readable output to `benchmark_results.json`.
+
+The same benchmark runs in GitHub Actions and uploads the result JSON as a workflow artifact.
+
+## Measured results
+
+| Retrieval mode | Hit@5 | MRR | Mean latency | P95 latency |
+|---|---:|---:|---:|---:|
+| Dense only | pending benchmark | pending | pending | pending |
+| Sparse BM25 | pending benchmark | pending | pending | pending |
+| Hybrid RRF | pending benchmark | pending | pending | pending |
+| Hybrid RRF + reranker | pending benchmark | pending | pending | pending |
+
+No performance value is added here until it is produced by the automated benchmark.
+
 ## Evaluation strategy
 
-The repository includes a golden evaluation set under `evals/`. The target comparison is:
+The repository separates retrieval evaluation from generation evaluation. Retrieval is compared experimentally first; grounded answer quality and citation behavior are measured after a retrieval configuration is selected.
 
-| Retrieval mode | Hit@5 | MRR | Answer quality | Latency |
-|---|---:|---:|---:|---:|
-| Dense only | TBD | TBD | TBD | TBD |
-| Hybrid | TBD | TBD | TBD | TBD |
-| Hybrid + reranker | TBD | TBD | TBD | TBD |
-
-Performance values will only be added after running real benchmarks.
+This makes it possible to attribute gains or regressions to the retrieval layer rather than hiding them inside an end-to-end LLM score.
 
 ## Roadmap
 
 - [x] FastAPI service
 - [x] document ingestion
+- [x] dense retrieval baseline
+- [x] sparse BM25 baseline
 - [x] hybrid retrieval
 - [x] RRF fusion
 - [x] CrossEncoder reranking
 - [x] grounded generation
 - [x] evaluation metrics
 - [x] Docker setup
-- [ ] run the first end-to-end benchmark
+- [x] 20-question multi-document retrieval benchmark
+- [x] GitHub Actions benchmark workflow
+- [ ] publish first measured benchmark results
 - [ ] expand evaluation set to 100+ questions
 - [ ] add adversarial / prompt-injection tests
 - [ ] add tracing and observability
