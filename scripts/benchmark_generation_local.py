@@ -9,7 +9,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from benchmark_generation import make_evidence, score_case, summarize, validate_prompt_contract
-from app.services.llm import build_messages
+from app.services.llm import REFUSAL_TEXT, build_messages
 
 DEFAULT_DATASET = Path("evals/generation_reliability_v1.json")
 DEFAULT_MODEL = "HuggingFaceTB/SmolLM2-360M-Instruct"
@@ -22,6 +22,9 @@ def generate_answer(
     evidence,
     max_new_tokens: int,
 ) -> tuple[str, float]:
+    if not evidence:
+        return REFUSAL_TEXT, 0.0
+
     messages = build_messages(question, evidence)
     prompt = tokenizer.apply_chat_template(
         messages,
