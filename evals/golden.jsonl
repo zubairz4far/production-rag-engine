@@ -1,0 +1,3 @@
+{"query":"How long are Enterprise audit logs retained by default?","expected_sources":["northstar_handbook.txt"],"expected_answer_contains":["365","days"],"top_k":5}
+{"query":"What is the acknowledgement target for a Severity 1 incident?","expected_sources":["northstar_handbook.txt"],"expected_answer_contains":["15","minute"],"top_k":5}
+{"query":"Who can rotate workspace API keys?","expected_sources":["northstar_handbook.txt"],"expected_answer_contains":["Admins","Owners"],"top_k":5}
