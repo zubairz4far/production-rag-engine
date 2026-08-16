@@ -74,6 +74,8 @@ class RequestObservabilityMiddleware(BaseHTTPMiddleware):
             log_event(
                 "http_request",
                 request_id=request_id,
+                render_request_id=request.headers.get("rndr-id"),
+                cf_ray=request.headers.get("cf-ray"),
                 method=request.method,
                 path=path,
                 status=status,
