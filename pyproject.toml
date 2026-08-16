@@ -1,7 +1,7 @@
 [project]
 name = "production-rag-engine"
-version = "0.2.1"
-description = "Hybrid RAG with reranking, citations, evaluation, and FastAPI."
+version = "0.3.0"
+description = "Hybrid RAG with reranking, citations, evaluation, observability, and FastAPI."
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115",
@@ -13,6 +13,7 @@ dependencies = [
   "pymupdf>=1.24",
   "httpx>=0.27",
   "numpy>=1.26",
+  "prometheus-client>=0.22",
 ]
 
 [project.optional-dependencies]
