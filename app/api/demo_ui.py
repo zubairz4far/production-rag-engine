@@ -1,6 +1,5 @@
 from fastapi.responses import HTMLResponse
 
-
 DEMO_HTML = r'''<!doctype html>
 <html lang="en">
 <head>
