@@ -1,6 +1,6 @@
 [project]
 name = "production-rag-engine"
-version = "0.2.0"
+version = "0.2.1"
 description = "Hybrid RAG with reranking, citations, evaluation, and FastAPI."
 requires-python = ">=3.11"
 dependencies = [
@@ -21,6 +21,10 @@ dev = [
   "pytest-cov>=5.0",
   "ruff>=0.6",
 ]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["evals*", "scripts*", "tests*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
