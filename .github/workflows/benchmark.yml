@@ -1,4 +1,4 @@
-name: Retrieval Benchmark
+name: RAG Benchmarks
 
 on:
   push:
@@ -6,7 +6,9 @@ on:
       - "app/**"
       - "evals/retrieval_benchmark.json"
       - "evals/retrieval_benchmark_v2.json"
+      - "evals/generation_reliability_v1.json"
       - "scripts/benchmark_retrieval.py"
+      - "scripts/benchmark_generation.py"
       - "pyproject.toml"
       - ".github/workflows/benchmark.yml"
   workflow_dispatch:
@@ -25,20 +27,26 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .
-      - name: Run benchmark V1
+      - name: Run retrieval benchmark V1
         run: |
           python scripts/benchmark_retrieval.py \
             --dataset evals/retrieval_benchmark.json \
             --output benchmark_results_v1.json
-      - name: Run benchmark V2
+      - name: Run retrieval benchmark V2
         run: |
           python scripts/benchmark_retrieval.py \
             --dataset evals/retrieval_benchmark_v2.json \
             --output benchmark_results_v2.json
+      - name: Validate generation reliability benchmark
+        run: |
+          python scripts/benchmark_generation.py \
+            --dataset evals/generation_reliability_v1.json \
+            --output generation_benchmark_contract.json
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
-          name: retrieval-benchmark-results
+          name: rag-benchmark-results
           path: |
             benchmark_results_v1.json
             benchmark_results_v2.json
+            generation_benchmark_contract.json
