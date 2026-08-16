@@ -63,6 +63,7 @@ class RequestObservabilityMiddleware(BaseHTTPMiddleware):
         try:
             response = await call_next(request)
             status = response.status_code
+            response.headers["x-request-id"] = request_id
             return response
         finally:
             elapsed = time.perf_counter() - started
@@ -78,14 +79,6 @@ class RequestObservabilityMiddleware(BaseHTTPMiddleware):
                 status=status,
                 duration_ms=round(elapsed * 1000, 2),
             )
-
-
-async def attach_request_id(request: Request, call_next):
-    response = await call_next(request)
-    request_id = getattr(request.state, "request_id", None)
-    if request_id:
-        response.headers["x-request-id"] = request_id
-    return response
 
 
 def metrics_response() -> Response:
