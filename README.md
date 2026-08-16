@@ -76,7 +76,7 @@ curl -X POST "http://localhost:8000/v1/query" \
 
 ## Reproducible retrieval benchmark
 
-The benchmark uses six competing documents and 20 labeled questions. It runs Qdrant in-memory, so no external database is required.
+The first benchmark uses six competing documents and 20 labeled questions. It runs Qdrant in-memory, so no external database is required.
 
 ```bash
 pip install -e .
@@ -96,20 +96,28 @@ The same benchmark runs in GitHub Actions and uploads the result JSON as a workf
 
 ## Measured results
 
+GitHub Actions benchmark, 20 labeled queries:
+
 | Retrieval mode | Hit@5 | MRR | Mean latency | P95 latency |
 |---|---:|---:|---:|---:|
-| Dense only | pending benchmark | pending | pending | pending |
-| Sparse BM25 | pending benchmark | pending | pending | pending |
-| Hybrid RRF | pending benchmark | pending | pending | pending |
-| Hybrid RRF + reranker | pending benchmark | pending | pending | pending |
+| Dense only | 1.000 | 0.975 | 21.18 ms | 21.64 ms |
+| Sparse BM25 | 1.000 | **1.000** | **2.56 ms** | **2.64 ms** |
+| Hybrid RRF | 1.000 | 0.975 | 24.23 ms | 24.72 ms |
+| Hybrid RRF + reranker | 1.000 | **1.000** | 178.66 ms | 191.85 ms |
 
-No performance value is added here until it is produced by the automated benchmark.
+### What this first experiment tells us
+
+On this small, terminology-heavy corpus, BM25 is already extremely strong: it reaches perfect MRR while being much faster than the neural alternatives. The reranker also reaches perfect MRR, but increases mean retrieval latency from roughly 24 ms for hybrid RRF to roughly 179 ms.
+
+That means the correct engineering conclusion is **not** that more complex retrieval is automatically better. The next benchmark must be harder and more semantic before choosing hybrid + reranking as the default production path.
+
+This is why the project keeps dense, sparse, hybrid, and reranked retrieval as independently measurable configurations.
 
 ## Evaluation strategy
 
 The repository separates retrieval evaluation from generation evaluation. Retrieval is compared experimentally first; grounded answer quality and citation behavior are measured after a retrieval configuration is selected.
 
-This makes it possible to attribute gains or regressions to the retrieval layer rather than hiding them inside an end-to-end LLM score.
+The current 20-question suite is a smoke benchmark, not a final quality claim. The next evaluation set will contain 100+ questions with paraphrases, lexical mismatch, distractor passages, near-duplicate evidence, and adversarial cases.
 
 ## Roadmap
 
@@ -125,8 +133,9 @@ This makes it possible to attribute gains or regressions to the retrieval layer 
 - [x] Docker setup
 - [x] 20-question multi-document retrieval benchmark
 - [x] GitHub Actions benchmark workflow
-- [ ] publish first measured benchmark results
-- [ ] expand evaluation set to 100+ questions
+- [x] publish first measured benchmark results
+- [ ] expand evaluation set to 100+ harder questions
 - [ ] add adversarial / prompt-injection tests
+- [ ] measure grounded generation and citation correctness
 - [ ] add tracing and observability
 - [ ] deploy a public demo
