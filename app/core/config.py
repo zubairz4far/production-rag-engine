@@ -1,4 +1,5 @@
 from functools import lru_cache
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,7 +10,7 @@ class Settings(BaseSettings):
     qdrant_collection: str = "rag_chunks"
     dense_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     sparse_model: str = "Qdrant/bm25"
-    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L6-v2"
+    reranker_model: str = "Xenova/ms-marco-MiniLM-L-6-v2"
     chunk_size_words: int = 220
     chunk_overlap_words: int = 40
     retrieval_prefetch: int = 20
