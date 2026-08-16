@@ -8,7 +8,7 @@ A portfolio-grade Retrieval-Augmented Generation system built to demonstrate ret
 Documents -> Loader -> Chunker -> Dense + BM25 indexing -> Qdrant
 Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> FastEmbed CrossEncoder reranker
       -> Context builder -> OpenAI-compatible LLM -> Answer + citations
-      -> Evaluation: Hit@K, MRR, citation rate, answer recall, latency
+      -> Evaluation: Hit@K, MRR, source recall, citation rate, answer recall, latency
 ```
 
 ## Stack
@@ -18,6 +18,7 @@ Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> FastEmbed CrossEnco
 - FastEmbed
 - dense semantic embeddings
 - BM25 sparse retrieval
+- Reciprocal Rank Fusion
 - CrossEncoder reranking
 - OpenAI-compatible LLM endpoint
 - Docker / Docker Compose
@@ -33,7 +34,9 @@ Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> FastEmbed CrossEnco
 - second-stage reranking
 - citation-aware grounded generation
 - retrieval-only debugging endpoint
-- multi-document golden retrieval benchmark
+- multi-document retrieval benchmarks
+- category-level evaluation
+- source recall for multi-source questions
 - latency tracking
 - automated CI
 
@@ -74,50 +77,81 @@ curl -X POST "http://localhost:8000/v1/query" \
   -d '{"question":"What does the document say?","top_k":5}'
 ```
 
-## Reproducible retrieval benchmark
+## Reproducible retrieval benchmarks
 
-The first benchmark uses six competing documents and 20 labeled questions. It runs Qdrant in-memory, so no external database is required.
+The repository contains two benchmark suites. Both run with an in-memory Qdrant instance, so no external database is required.
 
 ```bash
 pip install -e .
-python scripts/benchmark_retrieval.py
+
+# V1 smoke benchmark
+python scripts/benchmark_retrieval.py \
+  --dataset evals/retrieval_benchmark.json \
+  --output benchmark_results_v1.json
+
+# V2 hard benchmark
+python scripts/benchmark_retrieval.py \
+  --dataset evals/retrieval_benchmark_v2.json \
+  --output benchmark_results_v2.json
 ```
 
-The script compares four systems:
+The runner compares four systems:
 
 1. dense-only retrieval
 2. sparse BM25 retrieval
 3. dense + sparse with Reciprocal Rank Fusion
 4. hybrid RRF + CrossEncoder reranking
 
-It reports `Hit@5`, `MRR`, mean latency, and P95 latency, and writes the machine-readable output to `benchmark_results.json`.
+Metrics include `Hit@5`, `MRR`, `source recall@5`, mean latency, P95 latency, and per-category quality. GitHub Actions runs both suites and uploads machine-readable results.
 
-The same benchmark runs in GitHub Actions and uploads the result JSON as a workflow artifact.
+## Benchmark V1 — smoke test
 
-## Measured results
-
-GitHub Actions benchmark, 20 labeled queries:
+V1 contains six competing documents and 20 labeled questions.
 
 | Retrieval mode | Hit@5 | MRR | Mean latency | P95 latency |
 |---|---:|---:|---:|---:|
-| Dense only | 1.000 | 0.975 | 21.18 ms | 21.64 ms |
-| Sparse BM25 | 1.000 | **1.000** | **2.56 ms** | **2.64 ms** |
-| Hybrid RRF | 1.000 | 0.975 | 24.23 ms | 24.72 ms |
-| Hybrid RRF + reranker | 1.000 | **1.000** | 178.66 ms | 191.85 ms |
+| Dense only | 1.000 | 0.975 | 23.32 ms | 24.07 ms |
+| Sparse BM25 | 1.000 | **1.000** | **2.27 ms** | **2.35 ms** |
+| Hybrid RRF | 1.000 | 0.975 | 25.71 ms | 25.98 ms |
+| Hybrid RRF + reranker | 1.000 | **1.000** | 198.97 ms | 218.70 ms |
 
-### What this first experiment tells us
+V1 is intentionally simple. BM25 performs extremely well because the corpus is terminology-heavy.
 
-On this small, terminology-heavy corpus, BM25 is already extremely strong: it reaches perfect MRR while being much faster than the neural alternatives. The reranker also reaches perfect MRR, but increases mean retrieval latency from roughly 24 ms for hybrid RRF to roughly 179 ms.
+## Benchmark V2 — hard retrieval suite
 
-That means the correct engineering conclusion is **not** that more complex retrieval is automatically better. The next benchmark must be harder and more semantic before choosing hybrid + reranking as the default production path.
+V2 contains **24 near-overlapping policy documents and 120 labeled queries** across semantic paraphrases, lexical distractors, scope/tier ambiguity, numeric inference, version conflicts, contrast questions, and multi-source retrieval.
 
-This is why the project keeps dense, sparse, hybrid, and reranked retrieval as independently measurable configurations.
+| Retrieval mode | Hit@5 | MRR | Source recall@5 | Mean latency | P95 latency |
+|---|---:|---:|---:|---:|---:|
+| Dense only | 0.983 | 0.869 | 0.975 | 23.02 ms | 23.32 ms |
+| Sparse BM25 | 0.983 | 0.880 | 0.983 | **1.99 ms** | **2.77 ms** |
+| **Hybrid RRF** | **1.000** | 0.908 | **1.000** | 26.41 ms | 26.62 ms |
+| **Hybrid RRF + reranker** | **1.000** | **0.925** | **1.000** | 427.11 ms | 450.72 ms |
 
-## Evaluation strategy
+### V2 findings
 
-The repository separates retrieval evaluation from generation evaluation. Retrieval is compared experimentally first; grounded answer quality and citation behavior are measured after a retrieval configuration is selected.
+The harder benchmark changes the conclusion from V1:
 
-The current 20-question suite is a smoke benchmark, not a final quality claim. The next evaluation set will contain 100+ questions with paraphrases, lexical mismatch, distractor passages, near-duplicate evidence, and adversarial cases.
+- **Hybrid RRF is the strongest latency/coverage tradeoff.** It is the only non-reranked system with perfect Hit@5 and perfect source recall across all 120 cases.
+- **Reranking improves ordering quality.** Hybrid + reranker raises overall MRR from 0.908 to 0.925.
+- The reranker is especially useful for **semantic paraphrases**, where MRR rises from 0.903 for hybrid RRF to **0.984**.
+- BM25 remains extremely fast, but semantic paraphrases expose its weakness: category Hit@5 falls to **0.935**.
+- Dense retrieval handles paraphrases better than BM25 on coverage, but lexical distractors hurt its ordering quality.
+- Reranking has a real cost: mean retrieval latency increases from about **26 ms to 427 ms**.
+
+The practical default from this experiment is therefore **hybrid RRF without reranking for latency-sensitive retrieval**, with reranking reserved for workloads where top-rank precision matters more than latency.
+
+## Evaluation philosophy
+
+This repository treats RAG as an evaluated system rather than a framework demo. A more complex retrieval stack is only adopted when measurements justify the latency and operational cost.
+
+Retrieval evaluation is kept separate from generation evaluation. The next stage measures whether the generation layer:
+
+- answers only from retrieved evidence,
+- cites the correct source,
+- refuses unsupported questions,
+- handles contradictory/versioned evidence,
+- resists prompt injection inside retrieved documents.
 
 ## Roadmap
 
@@ -129,13 +163,16 @@ The current 20-question suite is a smoke benchmark, not a final quality claim. T
 - [x] RRF fusion
 - [x] CrossEncoder reranking
 - [x] grounded generation
-- [x] evaluation metrics
 - [x] Docker setup
-- [x] 20-question multi-document retrieval benchmark
-- [x] GitHub Actions benchmark workflow
-- [x] publish first measured benchmark results
-- [ ] expand evaluation set to 100+ harder questions
-- [ ] add adversarial / prompt-injection tests
-- [ ] measure grounded generation and citation correctness
+- [x] GitHub Actions CI
+- [x] 20-question V1 benchmark
+- [x] 120-question hard V2 benchmark
+- [x] category-level retrieval evaluation
+- [x] multi-source source-recall metric
+- [x] publish measured V1 + V2 results
+- [ ] add grounded generation benchmark
+- [ ] add citation correctness scoring
+- [ ] add unsupported-question refusal tests
+- [ ] add prompt-injection / adversarial retrieval tests
 - [ ] add tracing and observability
 - [ ] deploy a public demo
