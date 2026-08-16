@@ -5,13 +5,12 @@ import statistics
 import time
 from pathlib import Path
 
-from qdrant_client import QdrantClient
-
 from app.core.config import Settings
 from app.services.chunker import chunk_pages
 from app.services.document_loader import PageText
 from app.services.reranker import Reranker
 from app.services.vector_store import RetrievedChunk, VectorStore
+from qdrant_client import QdrantClient
 
 
 DATASET = Path("evals/retrieval_benchmark.json")
