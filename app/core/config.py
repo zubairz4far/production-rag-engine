@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     dense_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     sparse_model: str = "Qdrant/bm25"
     reranker_model: str = "Xenova/ms-marco-MiniLM-L-6-v2"
+    enable_reranker: bool = False
     chunk_size_words: int = 220
     chunk_overlap_words: int = 40
     retrieval_prefetch: int = 20
