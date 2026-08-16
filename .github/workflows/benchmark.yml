@@ -9,6 +9,7 @@ on:
       - "evals/generation_reliability_v1.json"
       - "scripts/benchmark_retrieval.py"
       - "scripts/benchmark_generation.py"
+      - "scripts/benchmark_generation_local.py"
       - "pyproject.toml"
       - ".github/workflows/benchmark.yml"
   workflow_dispatch:
@@ -16,7 +17,7 @@ on:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -42,6 +43,17 @@ jobs:
           python scripts/benchmark_generation.py \
             --dataset evals/generation_reliability_v1.json \
             --output generation_benchmark_contract.json
+      - name: Install local model runtime
+        run: |
+          pip install "transformers>=4.46,<5" accelerate
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Run local open-model generation baseline
+        run: |
+          python scripts/benchmark_generation_local.py \
+            --dataset evals/generation_reliability_v1.json \
+            --model HuggingFaceTB/SmolLM2-360M-Instruct \
+            --max-new-tokens 96 \
+            --output generation_benchmark_smollm2_360m.json
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
@@ -50,3 +62,4 @@ jobs:
             benchmark_results_v1.json
             benchmark_results_v2.json
             generation_benchmark_contract.json
+            generation_benchmark_smollm2_360m.json
