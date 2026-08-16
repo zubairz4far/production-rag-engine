@@ -1,6 +1,8 @@
 from app.evaluation.generation_metrics import (
     citation_coverage,
     citation_ids,
+    citation_precision,
+    citation_recall,
     citation_validity,
     forbidden_term_rate,
     keyword_recall,
@@ -22,6 +24,15 @@ def test_citation_coverage() -> None:
     assert citation_coverage("Supported claim [C1]", True) == 1.0
     assert citation_coverage("Unsupported claim", True) == 0.0
     assert citation_coverage("No citation needed", False) == 1.0
+
+
+def test_expected_citation_precision_and_recall() -> None:
+    assert citation_precision("Current policy [C2].", ["C2"]) == 1.0
+    assert citation_precision("Current policy [C1] [C2].", ["C2"]) == 0.5
+    assert citation_recall("Sources conflict [C1] [C2].", ["C1", "C2"]) == 1.0
+    assert citation_recall("Sources conflict [C1].", ["C1", "C2"]) == 0.5
+    assert citation_precision(REFUSAL_TEXT, []) == 1.0
+    assert citation_recall(REFUSAL_TEXT, []) == 1.0
 
 
 def test_refusal_and_keyword_scoring() -> None:
