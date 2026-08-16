@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
+
 import pymupdf
 
 
@@ -16,12 +17,19 @@ def load_document(path: Path) -> list[PageText]:
     suffix = path.suffix.lower()
     if suffix not in SUPPORTED_SUFFIXES:
         raise ValueError(f"Unsupported file type: {suffix}")
+
     if suffix == ".pdf":
-        pages = []
+        pages: list[PageText] = []
         with pymupdf.open(path) as doc:
             for page_index, page in enumerate(doc):
                 text = page.get_text("text").strip()
                 if text:
                     pages.append(PageText(page=page_index + 1, text=text))
         return pages
-    return [PageText(page=None, text=path.read_text(encoding="utf-8", errors="replace"))]
+
+    return [
+        PageText(
+            page=None,
+            text=path.read_text(encoding="utf-8", errors="replace"),
+        )
+    ]
