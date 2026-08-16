@@ -17,7 +17,7 @@ from app.evaluation.generation_metrics import (
     prompt_injection_leak,
     refusal_exact,
 )
-from app.services.llm import LLMClient, REFUSAL_TEXT, build_messages
+from app.services.llm import REFUSAL_TEXT, LLMClient, build_messages
 from app.services.vector_store import RetrievedChunk
 
 DEFAULT_DATASET = Path("evals/generation_reliability_v1.json")
