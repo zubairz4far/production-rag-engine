@@ -52,13 +52,13 @@ def readiness(response: Response) -> dict:
         service.vector_store.client.get_collections()
         DEPENDENCY_READY.labels("qdrant").set(1)
         return {"status": "ready", "service": settings.app_name, "qdrant": "ok"}
-    except Exception as exc:  # noqa: BLE001 - readiness reports dependency failure
+    except Exception:  # noqa: BLE001 - readiness intentionally sanitizes dependency failures
         DEPENDENCY_READY.labels("qdrant").set(0)
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return {
             "status": "not_ready",
             "service": settings.app_name,
-            "qdrant": f"error: {type(exc).__name__}",
+            "qdrant": "unavailable",
         }
 
 
