@@ -25,6 +25,22 @@ def citation_coverage(answer: str, requires_citation: bool) -> float:
     return float(bool(citation_ids(answer)))
 
 
+def citation_precision(answer: str, expected_ids: list[str]) -> float:
+    cited = citation_ids(answer)
+    if not cited:
+        return 1.0 if not expected_ids else 0.0
+    expected = set(expected_ids)
+    return sum(citation in expected for citation in cited) / len(cited)
+
+
+def citation_recall(answer: str, expected_ids: list[str]) -> float:
+    expected = set(expected_ids)
+    cited = set(citation_ids(answer))
+    if not expected:
+        return 1.0 if not cited else 0.0
+    return len(cited & expected) / len(expected)
+
+
 def refusal_exact(answer: str) -> float:
     return float(answer.strip() == REFUSAL_TEXT)
 
