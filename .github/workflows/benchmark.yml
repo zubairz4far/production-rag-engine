@@ -7,6 +7,7 @@ on:
       - "evals/retrieval_benchmark.json"
       - "evals/retrieval_benchmark_v2.json"
       - "evals/generation_reliability_v1.json"
+      - "evals/generation_reliability_v2.json"
       - "scripts/benchmark_retrieval.py"
       - "scripts/benchmark_generation.py"
       - "scripts/benchmark_generation_local.py"
@@ -17,7 +18,7 @@ on:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -38,22 +39,34 @@ jobs:
           python scripts/benchmark_retrieval.py \
             --dataset evals/retrieval_benchmark_v2.json \
             --output benchmark_results_v2.json
-      - name: Validate generation reliability benchmark
+      - name: Validate generation reliability V1
         run: |
           python scripts/benchmark_generation.py \
             --dataset evals/generation_reliability_v1.json \
-            --output generation_benchmark_contract.json
+            --output generation_benchmark_contract_v1.json
+      - name: Validate generation reliability V2
+        run: |
+          python scripts/benchmark_generation.py \
+            --dataset evals/generation_reliability_v2.json \
+            --output generation_benchmark_contract_v2.json
       - name: Install local model runtime
         run: |
           pip install "transformers>=4.46,<5" accelerate
           pip install torch --index-url https://download.pytorch.org/whl/cpu
-      - name: Run local open-model generation baseline
+      - name: Run local open-model generation V1
         run: |
           python scripts/benchmark_generation_local.py \
             --dataset evals/generation_reliability_v1.json \
             --model HuggingFaceTB/SmolLM2-360M-Instruct \
             --max-new-tokens 96 \
-            --output generation_benchmark_smollm2_360m.json
+            --output generation_benchmark_v1_smollm2_360m.json
+      - name: Run local open-model generation V2
+        run: |
+          python scripts/benchmark_generation_local.py \
+            --dataset evals/generation_reliability_v2.json \
+            --model HuggingFaceTB/SmolLM2-360M-Instruct \
+            --max-new-tokens 96 \
+            --output generation_benchmark_v2_smollm2_360m.json
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
@@ -61,5 +74,7 @@ jobs:
           path: |
             benchmark_results_v1.json
             benchmark_results_v2.json
-            generation_benchmark_contract.json
-            generation_benchmark_smollm2_360m.json
+            generation_benchmark_contract_v1.json
+            generation_benchmark_contract_v2.json
+            generation_benchmark_v1_smollm2_360m.json
+            generation_benchmark_v2_smollm2_360m.json
