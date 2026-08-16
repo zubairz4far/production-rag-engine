@@ -15,7 +15,6 @@ from app.services.document_loader import PageText
 from app.services.reranker import Reranker
 from app.services.vector_store import RetrievedChunk, VectorStore
 
-
 DEFAULT_DATASET = Path("evals/retrieval_benchmark.json")
 TOP_K = 5
 
