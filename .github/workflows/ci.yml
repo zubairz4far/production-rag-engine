@@ -20,3 +20,5 @@ jobs:
         run: ruff check .
       - name: Unit tests
         run: pytest -q
+      - name: Build Docker image
+        run: docker build -t production-rag-engine:ci .
