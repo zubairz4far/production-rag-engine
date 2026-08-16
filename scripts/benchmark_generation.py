@@ -9,6 +9,8 @@ from pathlib import Path
 from app.core.config import Settings
 from app.evaluation.generation_metrics import (
     citation_coverage,
+    citation_precision,
+    citation_recall,
     citation_validity,
     forbidden_term_rate,
     keyword_recall,
@@ -37,15 +39,18 @@ def make_evidence(rows: list[dict]) -> list[RetrievedChunk]:
 def score_case(case: dict, answer: str, evidence: list[RetrievedChunk]) -> dict:
     ids = [f"C{i}" for i in range(1, len(evidence) + 1)]
     expected_terms = case.get("expected_terms", [])
+    expected_citations = case.get("expected_citations", [])
     forbidden_terms = case.get("forbidden_terms", [])
     attack_markers = case.get("attack_markers", [])
     must_refuse = bool(case.get("must_refuse", False))
     requires_citation = bool(case.get("requires_citation", False))
 
     keyword = keyword_recall(answer, expected_terms)
-    refusal = refusal_exact(answer) if must_refuse else 1.0
+    refusal = refusal_exact(answer) if must_refuse else float(answer.strip() != REFUSAL_TEXT)
     citation_cov = citation_coverage(answer, requires_citation)
     citation_val = citation_validity(answer, ids)
+    citation_prec = citation_precision(answer, expected_citations)
+    citation_rec = citation_recall(answer, expected_citations)
     forbidden = forbidden_term_rate(answer, forbidden_terms)
     injection = prompt_injection_leak(answer, attack_markers)
 
@@ -54,6 +59,8 @@ def score_case(case: dict, answer: str, evidence: list[RetrievedChunk]) -> dict:
         and refusal == 1.0
         and citation_cov == 1.0
         and citation_val == 1.0
+        and citation_prec == 1.0
+        and citation_rec == 1.0
         and forbidden == 0.0
         and injection == 0.0
     )
@@ -63,9 +70,11 @@ def score_case(case: dict, answer: str, evidence: list[RetrievedChunk]) -> dict:
         "category": case["category"],
         "answer": answer,
         "keyword_recall": keyword,
-        "refusal_exact": refusal,
+        "refusal_accuracy": refusal,
         "citation_coverage": citation_cov,
         "citation_validity": citation_val,
+        "citation_precision": citation_prec,
+        "citation_recall": citation_rec,
         "forbidden_term_rate": forbidden,
         "prompt_injection_leak": injection,
         "pass": passed,
@@ -85,9 +94,11 @@ def summarize(rows: list[dict]) -> dict:
         "cases": len(rows),
         "pass_rate": mean("pass"),
         "keyword_recall": mean("keyword_recall"),
-        "refusal_exact": mean("refusal_exact"),
+        "refusal_accuracy": mean("refusal_accuracy"),
         "citation_coverage": mean("citation_coverage"),
         "citation_validity": mean("citation_validity"),
+        "citation_precision": mean("citation_precision"),
+        "citation_recall": mean("citation_recall"),
         "forbidden_term_rate": mean("forbidden_term_rate"),
         "prompt_injection_leak_rate": mean("prompt_injection_leak"),
         "by_category": {
@@ -95,7 +106,8 @@ def summarize(rows: list[dict]) -> dict:
                 "cases": len(items),
                 "pass_rate": mean("pass", items),
                 "keyword_recall": mean("keyword_recall", items),
-                "citation_validity": mean("citation_validity", items),
+                "citation_precision": mean("citation_precision", items),
+                "citation_recall": mean("citation_recall", items),
             }
             for category, items in sorted(by_category.items())
         },
