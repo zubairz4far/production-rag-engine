@@ -10,27 +10,48 @@ from starlette.responses import JSONResponse
 from app.core.config import get_settings
 
 
-class RateLimitMiddleware(BaseHTTPMiddleware):
-    """Per-process fixed-window limiter for public demo protection.
+def client_identity(request: Request, trusted_header: str | None) -> str:
+    """Return a rate-limit key from a configured trusted proxy header or socket peer."""
+    if trusted_header:
+        value = request.headers.get(trusted_header, "").strip()
+        if value:
+            return value.split(",", 1)[0].strip()
+    return request.client.host if request.client else "unknown"
 
-    Production multi-replica deployments should replace this with a shared limiter
-    backed by an API gateway or Redis.
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    """Per-process sliding-window limiter for public API protection.
+
+    Multi-replica deployments should replace this with an API-gateway or shared-store limiter.
+    Configure ``CLIENT_IP_HEADER`` only for a header overwritten by a trusted edge proxy.
     """
 
     def __init__(self, app):
         super().__init__(app)
         self.requests: dict[str, deque[float]] = defaultdict(deque)
+        self.last_cleanup = time.monotonic()
+
+    def _cleanup(self, now: float) -> None:
+        if now - self.last_cleanup < 60.0:
+            return
+        cutoff = now - 60.0
+        for key, bucket in list(self.requests.items()):
+            while bucket and bucket[0] < cutoff:
+                bucket.popleft()
+            if not bucket:
+                del self.requests[key]
+        self.last_cleanup = now
 
     async def dispatch(self, request: Request, call_next):
-        settings = get_settings()
-        if request.url.path.startswith(("/health", "/metrics")):
+        if not request.url.path.startswith("/v1/"):
             return await call_next(request)
 
-        forwarded = request.headers.get("x-forwarded-for", "")
-        client_ip = forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown")
+        settings = get_settings()
         now = time.monotonic()
+        self._cleanup(now)
         cutoff = now - 60.0
-        bucket = self.requests[client_ip]
+        key = client_identity(request, settings.client_ip_header)
+        bucket = self.requests[key]
         while bucket and bucket[0] < cutoff:
             bucket.popleft()
 
