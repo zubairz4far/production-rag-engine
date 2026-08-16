@@ -5,6 +5,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "Production RAG Engine"
+    demo_mode: bool = False
+    rate_limit_per_minute: int = 60
+    max_upload_mb: int = 10
     qdrant_url: str = "http://localhost:6333"
     qdrant_api_key: str | None = None
     qdrant_collection: str = "rag_chunks"
