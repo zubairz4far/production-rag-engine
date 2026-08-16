@@ -15,6 +15,7 @@ def test_citation_ids_and_validity() -> None:
     assert citation_ids(answer) == ["C1", "C2"]
     assert citation_validity(answer, ["C1", "C2"]) == 1.0
     assert citation_validity("Claim [C9]", ["C1"]) == 0.0
+    assert citation_validity(REFUSAL_TEXT, ["C1"]) == 1.0
 
 
 def test_citation_coverage() -> None:
