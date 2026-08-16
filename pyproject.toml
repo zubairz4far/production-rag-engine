@@ -1,7 +1,7 @@
 [project]
 name = "production-rag-engine"
-version = "0.3.0"
-description = "Hybrid RAG with reranking, citations, evaluation, observability, and FastAPI."
+version = "0.4.0"
+description = "Hybrid RAG with reranking, citations, evaluation, observability, and public demo mode."
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115",
