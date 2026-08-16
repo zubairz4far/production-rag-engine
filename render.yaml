@@ -10,5 +10,7 @@ services:
         value: "true"
       - key: RATE_LIMIT_PER_MINUTE
         value: "30"
+      - key: CLIENT_IP_HEADER
+        value: "cf-connecting-ip"
       - key: MAX_UPLOAD_MB
         value: "10"
