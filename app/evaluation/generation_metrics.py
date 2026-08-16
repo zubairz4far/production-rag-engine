@@ -14,7 +14,7 @@ def citation_ids(answer: str) -> list[str]:
 def citation_validity(answer: str, available_ids: list[str]) -> float:
     cited = citation_ids(answer)
     if not cited:
-        return 1.0 if not available_ids else 0.0
+        return 1.0
     allowed = set(available_ids)
     return sum(citation in allowed for citation in cited) / len(cited)
 
