@@ -1,14 +1,15 @@
 # Production RAG Engine
 
-A portfolio-grade Retrieval-Augmented Generation system built to demonstrate retrieval quality, reranking, grounded generation, evaluation, and production-style API design.
+A portfolio-grade Retrieval-Augmented Generation system built to demonstrate retrieval quality, grounded generation, evaluation, observability, and production-style API design.
 
 ## Architecture
 
 ```text
 Documents -> Loader -> Chunker -> Dense + BM25 indexing -> Qdrant
-Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> FastEmbed CrossEncoder reranker
+Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> optional CrossEncoder reranker
       -> Context builder -> OpenAI-compatible LLM -> Answer + citations
-      -> Evaluation: Hit@K, MRR, source recall, citation validity, refusal, injection resistance, latency
+      -> Evaluation: Hit@K, MRR, source recall, citation precision/recall, refusal, injection resistance
+      -> Observability: request IDs, structured logs, Prometheus metrics, latency histograms, readiness
 ```
 
 ## Stack
@@ -19,8 +20,10 @@ Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> FastEmbed CrossEnco
 - dense semantic embeddings
 - BM25 sparse retrieval
 - Reciprocal Rank Fusion
-- CrossEncoder reranking
+- optional CrossEncoder reranking
 - OpenAI-compatible LLM endpoint
+- Prometheus metrics
+- structured JSON request logs
 - Docker / Docker Compose
 - GitHub Actions
 
@@ -31,7 +34,7 @@ Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> FastEmbed CrossEnco
 - dense semantic retrieval
 - BM25 sparse retrieval
 - Reciprocal Rank Fusion
-- second-stage reranking
+- optional second-stage reranking
 - citation-aware grounded generation
 - retrieved-evidence prompt-injection hardening
 - exact unsupported-question refusal contract
@@ -39,8 +42,12 @@ Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> FastEmbed CrossEnco
 - multi-document retrieval benchmarks
 - category-level evaluation
 - source recall for multi-source questions
-- generation reliability scorer
-- latency tracking
+- citation precision and recall scoring
+- generation reliability benchmarks
+- request ID propagation
+- structured request telemetry
+- Prometheus counters, gauges, and latency histograms
+- liveness and dependency-aware readiness endpoints
 - automated CI
 
 ## Run locally
@@ -54,6 +61,21 @@ Then open:
 
 - API docs: `http://localhost:8000/docs`
 - Qdrant dashboard: `http://localhost:6333/dashboard`
+- Prometheus: `http://localhost:9090`
+- Metrics endpoint: `http://localhost:8000/metrics`
+
+## Production health and observability
+
+The service exposes separate process and dependency health endpoints:
+
+- `GET /health/live` — process liveness; does not depend on Qdrant.
+- `GET /health/ready` — readiness; returns HTTP 503 when Qdrant is unavailable.
+- `GET /health` — compatibility alias for readiness.
+- `GET /metrics` — Prometheus exposition endpoint.
+
+Every HTTP request gets an `x-request-id`. If the caller supplies one it is propagated; otherwise the API creates a UUID. Structured JSON request logs include request ID, route, method, status, and elapsed time.
+
+Prometheus instrumentation includes HTTP request counts, in-flight requests, HTTP latency, retrieval latency, generation latency, retrieved chunk count, and dependency readiness. Docker Compose includes a Prometheus service using `ops/prometheus.yml` to scrape the API every 15 seconds.
 
 ## API
 
@@ -142,33 +164,36 @@ The harder benchmark changes the conclusion from V1:
 - Dense retrieval handles paraphrases better than BM25 on coverage, but lexical distractors hurt its ordering quality.
 - Reranking has a real cost: mean retrieval latency increases from about **26 ms to 427 ms**.
 
-The practical default from this experiment is therefore **hybrid RRF without reranking for latency-sensitive retrieval**, with reranking reserved for workloads where top-rank precision matters more than latency.
+The practical default from this experiment is therefore **hybrid RRF without reranking for latency-sensitive retrieval**, with reranking reserved for workloads where top-rank precision matters more than latency. Production config follows that result with reranking disabled by default.
 
-## Generation Reliability Benchmark V1
+## Generation Reliability Benchmarks
 
-Generation evaluation is intentionally separated from retrieval evaluation. The V1 suite currently contains 12 targeted cases covering:
+Generation evaluation is intentionally separated from retrieval evaluation.
 
-- grounded factual answers,
-- exact unsupported-question refusal,
-- stale-versus-current policy resolution,
-- unresolved contradictory evidence,
-- citation presence and citation-ID validity,
-- malicious instructions embedded inside retrieved documents.
+V1 contains 12 targeted cases covering grounded factual answers, exact unsupported-question refusal, stale-versus-current policy resolution, unresolved contradictory evidence, citation behavior, and malicious instructions embedded in retrieved documents.
+
+V2 expands the suite to **40 adversarial cases across 10 categories**, including single- and multi-source grounding, partial support, current-vs-legacy resolution, unresolved conflicts, prompt injection, citation laundering, numeric reasoning, and scope/tier ambiguity.
 
 ```bash
 # Offline CI-safe contract validation
 python scripts/benchmark_generation.py \
-  --dataset evals/generation_reliability_v1.json \
-  --output generation_benchmark_contract.json
+  --dataset evals/generation_reliability_v2.json \
+  --output generation_benchmark_v2_contract.json
 
-# Live model evaluation against the configured OpenAI-compatible endpoint
+# Local open-model evaluation
+python scripts/benchmark_generation_local.py \
+  --dataset evals/generation_reliability_v2.json \
+  --model HuggingFaceTB/SmolLM2-360M-Instruct \
+  --output generation_benchmark_v2_smollm2_360m.json
+
+# Live configured OpenAI-compatible endpoint
 python scripts/benchmark_generation.py \
-  --dataset evals/generation_reliability_v1.json \
-  --output generation_benchmark_live.json \
+  --dataset evals/generation_reliability_v2.json \
+  --output generation_benchmark_v2_live.json \
   --live
 ```
 
-Offline mode validates the benchmark and the prompt-safety contract only. It does **not** fabricate model-quality results. Live mode scores keyword recall, exact refusal, citation coverage, citation-ID validity, forbidden-term leakage, prompt-injection leakage, category pass rate, and overall pass rate.
+Offline mode validates the benchmark and prompt-safety contract only. It does **not** fabricate model-quality results. Live/local scoring includes keyword recall, refusal accuracy, citation coverage, citation-ID validity, citation precision, citation recall, forbidden-term leakage, prompt-injection leakage, category pass rate, and overall strict pass rate.
 
 Retrieved evidence is explicitly treated as **untrusted data** and wrapped in evidence delimiters. Instructions found inside documents are not allowed to override the system prompt.
 
@@ -184,7 +209,7 @@ This repository treats RAG as an evaluated system rather than a framework demo. 
 - [x] sparse BM25 baseline
 - [x] hybrid retrieval
 - [x] RRF fusion
-- [x] CrossEncoder reranking
+- [x] optional CrossEncoder reranking
 - [x] grounded generation
 - [x] Docker setup
 - [x] GitHub Actions CI
@@ -192,13 +217,19 @@ This repository treats RAG as an evaluated system rather than a framework demo. 
 - [x] 120-question hard V2 retrieval benchmark
 - [x] category-level retrieval evaluation
 - [x] multi-source source-recall metric
-- [x] publish measured V1 + V2 results
-- [x] add Generation Reliability Benchmark V1 dataset
-- [x] add citation validity and refusal scoring
-- [x] add prompt-injection retrieval tests
+- [x] publish measured V1 + V2 retrieval results
+- [x] Generation Reliability Benchmark V1 dataset
+- [x] Generation Reliability Benchmark V2 40-case adversarial dataset
+- [x] citation validity, precision, recall, and refusal scoring
+- [x] prompt-injection retrieval tests
 - [x] harden retrieved evidence as untrusted input
-- [ ] run and publish live-model generation results
+- [x] run first local open-model generation baseline
+- [x] request ID propagation and structured request logs
+- [x] Prometheus request/retrieval/generation metrics
+- [x] liveness and dependency-aware readiness probes
+- [x] Docker Compose Prometheus collector
+- [ ] publish measured 40-case V2 generation results
 - [ ] expand generation benchmark to 50+ cases
 - [ ] add claim-level citation entailment scoring
-- [ ] add tracing and observability
+- [ ] add distributed tracing export (OpenTelemetry)
 - [ ] deploy a public demo
