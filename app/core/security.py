@@ -46,5 +46,6 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
             "detail": "Internal server error.",
             "request_id": request_id,
         },
+        headers={"x-request-id": request_id},
     )
     return apply_security_headers(response)
