@@ -3,6 +3,7 @@ services:
     name: production-rag-engine
     runtime: docker
     plan: free
+    autoDeploy: false
     healthCheckPath: /health/live
     envVars:
       - key: DEMO_MODE
