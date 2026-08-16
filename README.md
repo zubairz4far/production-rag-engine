@@ -8,7 +8,7 @@ A portfolio-grade Retrieval-Augmented Generation system built to demonstrate ret
 Documents -> Loader -> Chunker -> Dense + BM25 indexing -> Qdrant
 Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> FastEmbed CrossEncoder reranker
       -> Context builder -> OpenAI-compatible LLM -> Answer + citations
-      -> Evaluation: Hit@K, MRR, source recall, citation rate, answer recall, latency
+      -> Evaluation: Hit@K, MRR, source recall, citation validity, refusal, injection resistance, latency
 ```
 
 ## Stack
@@ -33,10 +33,13 @@ Query -> Dense retrieval + Sparse retrieval -> RRF fusion -> FastEmbed CrossEnco
 - Reciprocal Rank Fusion
 - second-stage reranking
 - citation-aware grounded generation
+- retrieved-evidence prompt-injection hardening
+- exact unsupported-question refusal contract
 - retrieval-only debugging endpoint
 - multi-document retrieval benchmarks
 - category-level evaluation
 - source recall for multi-source questions
+- generation reliability scorer
 - latency tracking
 - automated CI
 
@@ -79,7 +82,7 @@ curl -X POST "http://localhost:8000/v1/query" \
 
 ## Reproducible retrieval benchmarks
 
-The repository contains two benchmark suites. Both run with an in-memory Qdrant instance, so no external database is required.
+The repository contains two retrieval benchmark suites. Both run with an in-memory Qdrant instance, so no external database is required.
 
 ```bash
 pip install -e .
@@ -141,17 +144,37 @@ The harder benchmark changes the conclusion from V1:
 
 The practical default from this experiment is therefore **hybrid RRF without reranking for latency-sensitive retrieval**, with reranking reserved for workloads where top-rank precision matters more than latency.
 
+## Generation Reliability Benchmark V1
+
+Generation evaluation is intentionally separated from retrieval evaluation. The V1 suite currently contains 12 targeted cases covering:
+
+- grounded factual answers,
+- exact unsupported-question refusal,
+- stale-versus-current policy resolution,
+- unresolved contradictory evidence,
+- citation presence and citation-ID validity,
+- malicious instructions embedded inside retrieved documents.
+
+```bash
+# Offline CI-safe contract validation
+python scripts/benchmark_generation.py \
+  --dataset evals/generation_reliability_v1.json \
+  --output generation_benchmark_contract.json
+
+# Live model evaluation against the configured OpenAI-compatible endpoint
+python scripts/benchmark_generation.py \
+  --dataset evals/generation_reliability_v1.json \
+  --output generation_benchmark_live.json \
+  --live
+```
+
+Offline mode validates the benchmark and the prompt-safety contract only. It does **not** fabricate model-quality results. Live mode scores keyword recall, exact refusal, citation coverage, citation-ID validity, forbidden-term leakage, prompt-injection leakage, category pass rate, and overall pass rate.
+
+Retrieved evidence is explicitly treated as **untrusted data** and wrapped in evidence delimiters. Instructions found inside documents are not allowed to override the system prompt.
+
 ## Evaluation philosophy
 
-This repository treats RAG as an evaluated system rather than a framework demo. A more complex retrieval stack is only adopted when measurements justify the latency and operational cost.
-
-Retrieval evaluation is kept separate from generation evaluation. The next stage measures whether the generation layer:
-
-- answers only from retrieved evidence,
-- cites the correct source,
-- refuses unsupported questions,
-- handles contradictory/versioned evidence,
-- resists prompt injection inside retrieved documents.
+This repository treats RAG as an evaluated system rather than a framework demo. A more complex retrieval or generation design is only adopted when measurements justify the latency, reliability, and operational cost.
 
 ## Roadmap
 
@@ -165,14 +188,17 @@ Retrieval evaluation is kept separate from generation evaluation. The next stage
 - [x] grounded generation
 - [x] Docker setup
 - [x] GitHub Actions CI
-- [x] 20-question V1 benchmark
-- [x] 120-question hard V2 benchmark
+- [x] 20-question V1 retrieval benchmark
+- [x] 120-question hard V2 retrieval benchmark
 - [x] category-level retrieval evaluation
 - [x] multi-source source-recall metric
 - [x] publish measured V1 + V2 results
-- [ ] add grounded generation benchmark
-- [ ] add citation correctness scoring
-- [ ] add unsupported-question refusal tests
-- [ ] add prompt-injection / adversarial retrieval tests
+- [x] add Generation Reliability Benchmark V1 dataset
+- [x] add citation validity and refusal scoring
+- [x] add prompt-injection retrieval tests
+- [x] harden retrieved evidence as untrusted input
+- [ ] run and publish live-model generation results
+- [ ] expand generation benchmark to 50+ cases
+- [ ] add claim-level citation entailment scoring
 - [ ] add tracing and observability
 - [ ] deploy a public demo
