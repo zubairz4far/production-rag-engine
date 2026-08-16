@@ -1,0 +1,113 @@
+{
+  "measured_at": "2026-08-16",
+  "source": {
+    "github_actions_run_id": 31963034743,
+    "commit_sha": "8019fa9a6ff13a092ce7feb890b425e1aa1bedeb"
+  },
+  "retrieval_v1": {
+    "queries": 20,
+    "dense": {
+      "hit_at_5": 1.0,
+      "mrr": 0.975,
+      "source_recall_at_5": 1.0,
+      "mean_latency_ms": 23.35199555,
+      "p95_latency_ms": 23.811926
+    },
+    "sparse_bm25": {
+      "hit_at_5": 1.0,
+      "mrr": 1.0,
+      "source_recall_at_5": 1.0,
+      "mean_latency_ms": 2.3572495,
+      "p95_latency_ms": 2.621039
+    },
+    "hybrid_rrf": {
+      "hit_at_5": 1.0,
+      "mrr": 0.975,
+      "source_recall_at_5": 1.0,
+      "mean_latency_ms": 25.83255055,
+      "p95_latency_ms": 26.207055
+    },
+    "hybrid_rrf_rerank": {
+      "hit_at_5": 1.0,
+      "mrr": 1.0,
+      "source_recall_at_5": 1.0,
+      "mean_latency_ms": 200.25111705,
+      "p95_latency_ms": 223.343172
+    }
+  },
+  "retrieval_v2": {
+    "queries": 120,
+    "dense": {
+      "hit_at_5": 0.9833333333,
+      "mrr": 0.8694444444,
+      "source_recall_at_5": 0.975,
+      "mean_latency_ms": 23.4791348583,
+      "p95_latency_ms": 23.918385
+    },
+    "sparse_bm25": {
+      "hit_at_5": 0.9833333333,
+      "mrr": 0.8798611111,
+      "source_recall_at_5": 0.9833333333,
+      "mean_latency_ms": 2.108136475,
+      "p95_latency_ms": 2.82888
+    },
+    "hybrid_rrf": {
+      "hit_at_5": 1.0,
+      "mrr": 0.9083333333,
+      "source_recall_at_5": 1.0,
+      "mean_latency_ms": 28.8768419833,
+      "p95_latency_ms": 34.075659
+    },
+    "hybrid_rrf_rerank": {
+      "hit_at_5": 1.0,
+      "mrr": 0.925,
+      "source_recall_at_5": 1.0,
+      "mean_latency_ms": 425.0863018583,
+      "p95_latency_ms": 454.583647
+    }
+  },
+  "generation": {
+    "model": "HuggingFaceTB/SmolLM2-360M-Instruct",
+    "v1": {
+      "cases": 12,
+      "strict_pass_rate": 0.1666666667,
+      "strict_passed_cases": 2,
+      "keyword_recall": 0.1666666667,
+      "refusal_accuracy": 0.1666666667,
+      "citation_coverage": 0.1666666667,
+      "citation_validity": 1.0,
+      "citation_precision": 0.1666666667,
+      "citation_recall": 0.1666666667,
+      "forbidden_term_rate": 0.0,
+      "prompt_injection_leak_rate": 0.0,
+      "mean_generation_ms": 2507.2244645833
+    },
+    "v2": {
+      "cases": 40,
+      "strict_pass_rate": 0.2,
+      "strict_passed_cases": 8,
+      "keyword_recall": 0.2,
+      "refusal_accuracy": 0.2,
+      "citation_coverage": 0.2,
+      "citation_validity": 1.0,
+      "citation_precision": 0.2,
+      "citation_recall": 0.2,
+      "forbidden_term_rate": 0.0,
+      "prompt_injection_leak_rate": 0.0,
+      "mean_generation_ms": 2625.04965995,
+      "category_pass_rate": {
+        "supported_single_source": 0.0,
+        "supported_multi_source": 0.0,
+        "unsupported_refusal": 1.0,
+        "partial_support": 1.0,
+        "current_vs_legacy": 0.0,
+        "unresolved_conflict": 0.0,
+        "prompt_injection": 0.0,
+        "citation_laundering": 0.0,
+        "numeric_reasoning": 0.0,
+        "scope_tier_ambiguity": 0.0
+      },
+      "diagnosis": "The 360M baseline strongly over-refuses. Its zero prompt-injection leakage and perfect citation-ID validity should not be interpreted as strong grounded generation because supported-answer categories mostly fail. The benchmark is retained as a capacity/failure-mode baseline for the model-agnostic RAG service."
+    }
+  }
+}
