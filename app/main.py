@@ -14,7 +14,7 @@ settings = get_settings()
 
 app = FastAPI(
     title=settings.app_name,
-    version="0.4.0",
+    version="1.0.0",
     description="Hybrid RAG with citations, evaluation, observability, and public demo mode.",
 )
 app.add_exception_handler(Exception, unhandled_exception_handler)
