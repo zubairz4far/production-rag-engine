@@ -1,0 +1,50 @@
+{
+  "documents": [
+    {
+      "source": "northstar_security.txt",
+      "text": "Northstar Security Handbook. Enterprise audit logs are retained for 365 days by default. Audit records include authentication events, workspace administration changes, API key lifecycle events, and document deletion events. Single sign-on can be enforced for Enterprise workspaces. Only Admins and Owners may rotate workspace API keys. Only Owners may transfer workspace ownership."
+    },
+    {
+      "source": "northstar_incidents.txt",
+      "text": "Northstar Incident Response Guide. Severity 1 production incidents have a 15-minute initial acknowledgement target. Severity 2 incidents have a one-hour acknowledgement target. Standard support requests are handled during regional business hours. Enterprise production deployments receive continuous monitoring."
+    },
+    {
+      "source": "northstar_retention.txt",
+      "text": "Northstar Data Retention Policy. Uploaded source documents remain available until a workspace administrator deletes them. After deletion, the source document and its associated derived chunks are scheduled for permanent deletion within 30 days. Backups follow a separate rolling retention schedule."
+    },
+    {
+      "source": "northstar_retrieval.txt",
+      "text": "Northstar Retrieval Architecture. Knowledge search combines semantic dense retrieval with lexical sparse retrieval. Candidate lists are fused before a second-stage reranker. The production configuration returns five final evidence chunks to the generation layer. Answers should cite evidence and report when context is insufficient."
+    },
+    {
+      "source": "northstar_billing.txt",
+      "text": "Northstar Billing Guide. Team plans are billed monthly. Enterprise contracts may be invoiced annually. Usage overages are calculated from processed document volume and generation tokens. Billing administrators can download invoices from the workspace billing page."
+    },
+    {
+      "source": "northstar_integrations.txt",
+      "text": "Northstar Integrations Guide. Enterprise customers may export audit logs to their own SIEM platform. Webhook destinations can be configured for ingestion completion and document deletion events. API integrations authenticate using workspace API keys that can be rotated by authorized workspace administrators."
+    }
+  ],
+  "queries": [
+    {"query": "How long are Enterprise audit logs kept by default?", "expected_source": "northstar_security.txt"},
+    {"query": "Who is allowed to rotate a workspace API key?", "expected_source": "northstar_security.txt"},
+    {"query": "Who can transfer ownership of a workspace?", "expected_source": "northstar_security.txt"},
+    {"query": "Can SSO be required for an Enterprise workspace?", "expected_source": "northstar_security.txt"},
+    {"query": "What is the acknowledgement target for a Sev 1 incident?", "expected_source": "northstar_incidents.txt"},
+    {"query": "How quickly should Severity 2 be acknowledged?", "expected_source": "northstar_incidents.txt"},
+    {"query": "Are production Enterprise deployments monitored continuously?", "expected_source": "northstar_incidents.txt"},
+    {"query": "What happens to chunks when an uploaded document is deleted?", "expected_source": "northstar_retention.txt"},
+    {"query": "How soon is a deleted source permanently removed?", "expected_source": "northstar_retention.txt"},
+    {"query": "Do backups use the exact same deletion schedule as source documents?", "expected_source": "northstar_retention.txt"},
+    {"query": "Does search combine semantic and lexical retrieval?", "expected_source": "northstar_retrieval.txt"},
+    {"query": "What happens after the dense and sparse candidate lists are combined?", "expected_source": "northstar_retrieval.txt"},
+    {"query": "How many final evidence chunks reach generation in production?", "expected_source": "northstar_retrieval.txt"},
+    {"query": "What should the assistant do if retrieved context is not enough?", "expected_source": "northstar_retrieval.txt"},
+    {"query": "How are Team plans billed?", "expected_source": "northstar_billing.txt"},
+    {"query": "Can Enterprise contracts be invoiced yearly?", "expected_source": "northstar_billing.txt"},
+    {"query": "Where can billing admins get invoices?", "expected_source": "northstar_billing.txt"},
+    {"query": "Can audit events be sent to a SIEM?", "expected_source": "northstar_integrations.txt"},
+    {"query": "Which webhook event is available when document ingestion finishes?", "expected_source": "northstar_integrations.txt"},
+    {"query": "What credential do API integrations use?", "expected_source": "northstar_integrations.txt"}
+  ]
+}
