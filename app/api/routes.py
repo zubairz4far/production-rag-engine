@@ -1,4 +1,5 @@
 import hashlib
+from tempfile import TemporaryDirectory
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated
@@ -89,11 +90,13 @@ def upload_document(file: Annotated[UploadFile, File()]) -> IngestResponse:
         )
 
     max_bytes = settings.max_upload_mb * 1024 * 1024
-    upload_dir = Path("uploads")
-    upload_dir.mkdir(parents=True, exist_ok=True)
-    target = upload_dir / name.name
     written = 0
-    try:
+    digest = hashlib.sha256()
+
+    # Every request gets a private, automatically cleaned workspace. Do not
+    # store uploads at client-selected paths: names can collide across requests.
+    with TemporaryDirectory(prefix="rag-ingest-") as workspace:
+        target = Path(workspace) / f"document{name.suffix.lower()}"
         with target.open("wb") as out:
             while chunk := file.file.read(1024 * 1024):
                 written += len(chunk)
@@ -102,17 +105,15 @@ def upload_document(file: Annotated[UploadFile, File()]) -> IngestResponse:
                         status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                         detail=f"Upload exceeds {settings.max_upload_mb} MB limit.",
                     )
+                digest.update(chunk)
                 out.write(chunk)
-    except Exception:
-        target.unlink(missing_ok=True)
-        raise
 
-    document_id = hashlib.sha256(target.read_bytes()).hexdigest()[:24]
-    pages = load_document(target)
-    chunks = chunk_pages(pages, settings.chunk_size_words, settings.chunk_overlap_words)
-    service = get_rag_service()
-    assert isinstance(service, RAGService)
-    indexed = service.vector_store.index_chunks(document_id, name.name, chunks)
+        document_id = digest.hexdigest()[:24]
+        pages = load_document(target)
+        chunks = chunk_pages(pages, settings.chunk_size_words, settings.chunk_overlap_words)
+        service = get_rag_service()
+        assert isinstance(service, RAGService)
+        indexed = service.vector_store.index_chunks(document_id, name.name, chunks)
 
     return IngestResponse(
         document_id=document_id,
