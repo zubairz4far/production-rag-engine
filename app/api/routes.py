@@ -109,7 +109,20 @@ def upload_document(file: Annotated[UploadFile, File()]) -> IngestResponse:
                 out.write(chunk)
 
         document_id = digest.hexdigest()[:24]
-        pages = load_document(target)
+        try:
+            pages = load_document(target)
+        except (ValueError, RuntimeError, UnicodeError) as exc:
+            # Malformed or unreadable user documents are client errors, not 500s.
+            # Do not expose parser internals or document contents to API callers.
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="Document could not be parsed. Supply a valid PDF, TXT, or Markdown file.",
+            ) from exc
+        if not pages or not any(page.text.strip() for page in pages):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="Document contains no extractable text.",
+            )
         chunks = chunk_pages(pages, settings.chunk_size_words, settings.chunk_overlap_words)
         service = get_rag_service()
         assert isinstance(service, RAGService)
