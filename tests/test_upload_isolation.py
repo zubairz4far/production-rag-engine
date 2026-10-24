@@ -84,9 +84,34 @@ def test_parser_failure_does_not_leave_untrusted_file_on_disk(monkeypatch):
         raise ValueError("invalid source")
 
     monkeypatch.setattr(routes, "load_document", fail_parse)
-    with pytest.raises(ValueError, match="invalid source"):
+    with pytest.raises(HTTPException) as exc:
         routes.upload_document(UploadFile(file=BytesIO(b"not a pdf"), filename="bad.pdf"))
+    assert exc.value.status_code == 422
+    assert "invalid source" not in exc.value.detail
 
     assert len(seen) == 1
     assert not seen[0].exists()
+    assert service.documents == []
+
+
+@pytest.mark.parametrize("error", [ValueError("sensitive parser path"), RuntimeError("bad PDF")])
+def test_malformed_documents_return_sanitized_422_and_are_not_indexed(monkeypatch, error):
+    service = RecordingService()
+    configure(monkeypatch, service)
+    monkeypatch.setattr(routes, "load_document", lambda _: (_ for _ in ()).throw(error))
+    with pytest.raises(HTTPException) as exc:
+        routes.upload_document(UploadFile(file=BytesIO(b"not a valid document"), filename="bad.pdf"))
+    assert exc.value.status_code == 422
+    assert str(error) not in exc.value.detail
+    assert service.documents == []
+
+
+def test_empty_extraction_is_rejected_without_indexing(monkeypatch):
+    service = RecordingService()
+    configure(monkeypatch, service)
+    monkeypatch.setattr(routes, "load_document", lambda _: [PageText(page=1, text="   ")])
+    with pytest.raises(HTTPException) as exc:
+        routes.upload_document(UploadFile(file=BytesIO(b"blank"), filename="blank.pdf"))
+    assert exc.value.status_code == 422
+    assert "no extractable text" in exc.value.detail
     assert service.documents == []
